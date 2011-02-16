@@ -93,7 +93,7 @@ function listdir_by_date($path){
         if ($file != '.' and $file != '..'){
             // add the filename, to be sure not to
             // overwrite a array key
-            $ctime = filectime($data_path . $file) . ',' . $file;
+            $ctime = filemtime($data_path . $file) . ',' . $file;
             $list[$ctime] = $file;
         }
     }
