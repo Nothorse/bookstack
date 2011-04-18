@@ -1,45 +1,4 @@
 <?php
-require_once('ebook.cls.php');
-  if(strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false) {
-    $protocol = "epub";
-  } else {
-    $protocol = "http";
-  }
-  
-  if (substr($_SERVER['PATH_INFO'], 1, 3) == "get") {
-    list($discard,$method, $file, $title) = explode('/', $_SERVER['PATH_INFO']);
-    header("Content-Type: application/epub");
-    echo file_get_contents($file);
-    exit;
-  }
-
-  if (substr($_SERVER['PATH_INFO'], 1, 4) == "meta") {
-    list($discard,$method, $file, $title) = explode('/', $_SERVER['PATH_INFO']);
-    $book = new ebook($file);
-    $zip = new ZipArchive();
-    if ($zip->open($file)===TRUE){
-      $container = simplexml_load_string($zip->getFromName(ebook::CONTAINER));
-      $rootfile = $book->get_metafile($zip);
-    }
-    header("Content-Type: text/xml");
-    echo $zip->getFromName($rootfile);
-    exit;
-  }
-
-
-?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<meta name='viewport' content='width=320,user-scalable=false' />	<title>TH's Library</title>
-</head>
-<body style='padding:0;margin:0;'>
-<p style='margin:0;border-bottom: 2px #333 solid;padding:0;width:100%'><a href="<?php echo $_SERVER['PHP_SELF'] ?>?sort=name" style='color: #333;text-decoration:none; display:block; border-right: 2px #333 solid; font-size: 16pt;padding:4px;margin:0;float:left;text-align:center;'>by Name</a><a href="<?php echo $_SERVER['PHP_SELF'] ?>?sort=date" style='color: #333;text-decoration:none; display:block; border-right: 2px #333 solid;font-size: 16pt;padding:4px;margin:0;float:left;text-align:center'>by Date</a><a href="<?php echo $_SERVER['PHP_SELF'] ?>?sort=author" style='color: #333;text-decoration:none; display:block; border-right: 2px #333 solid;font-size: 16pt;padding:4px;margin:0;float:left;text-align:center'>by Author</a><br style="clear:both"></p>
-
-<?php 
-#phpinfo();
 /** 
  * Change the path to your folder. 
  * 
@@ -49,36 +8,78 @@ require_once('ebook.cls.php');
  * Name this file index.php and place in the directory. 
  */ 
 
-    // Define the full path to your folder from root 
-    $path = "/Users/thomas/public/ffic/"; 
-    
+// Define the full path to your folder from root 
+$path = "/Users/thomas/public/ffic/"; 
+require_once('config.php');
+require_once('ebook.cls.php');
+require_once('stanza.cls.php');
+require_once('browser.cls.php');
+require_once('library.cls.php');
+$db = new library();
+$ua = $_SERVER['HTTP_USER_AGENT'];
+header("X-UA-REQUEST: $ua");
+if (strpos($ua, 'Stanza') === false) {
+  $display = new browserdisplay();
+} else {
+  $display = new stanzadisplay();
+}
+
+header("X-Display: ". get_class($display));
+header("X-SELFZURL: ".SERVER.BASEURL);
+
+  
+ $path = explode('/', trim($_SERVER['PATH_INFO'], '/'));
+ 
+ if ($path[0] == "get") {
+    $book = $db->getBook($path[1]);
+    #print_r($book);
+    header("Content-Type: application/epub");
+    echo file_get_contents($book->file);
+    exit;
+  }
+
+  if ($path[0] == "author") {
+    list($discard,$method, $author) = explode('/', $_SERVER['PATH_INFO']);
+    $list = $db->getBookList('added desc', 'where author = \'' . $author . '\'');
+    printHeader();
+    printBookList($list);
+    exit;
+  }
+
+  if($path[0] == 'meta') {
+    $book = $db->getBook($path[1]);
+    $newbook = new ebook($book->file);
+    header("Content-Type: text/plain");
+    print_r($newbook);
+    exit;
+  }
+
+  $items = listdir_by_date($path, $db);
+  foreach ($items as $id => $item) {
+    $book = new ebook($path.$item);
+    $authors[$book->sortauthor][$book->id] = $book;
+    $allbooks[$book->id]         = $book;
+  }
+
+
+    printHeader();
     switch ($_GET['sort']) {
       case 'name':
-        $list = listdir_by_name($path);
+        $list = listdir_by_name($path, $db);
+        printBookList($list);
         break;
       case 'author':
-        $list = listdir_by_author($path);
+        $list = listdir_by_author($path, $db);
+        printAuthorList($list);
         break;
       case 'date':
-        $list = listdir_by_date($path);
+        $list = listdir_by_date($path, $db);
+        printBookList($list);
         break;
       default:
-        $list = listdir_by_date($path);
+        $list = listdir_by_date($path, $db);
+        printBookList($list);
     }
-//     $list = ($_GET['sort'] == 'name') ? listdir_by_name($path) : listdir_by_date($path);
-    
-    foreach ($list as $file) { 
-      list($name, $suffix) = explode('.', $file);
-      if($suffix == 'epub') {
-        $book = new ebook($file);
-        #echo $book->title;
-        #print_r($book);
-        $name = preg_replace("/(?<=[^A-Z])([A-Z])/", " $1", $name);
-        echo "<p style='padding:0;margin:0'><a href=\"".$protocol."://".$_SERVER['HTTP_HOST'].":".$_SERVER['SERVER_PORT'].$_SERVER['PHP_SELF']."/get/$file/".$book->title."\" style='color: #333;text-decoration:none; display:block; width: 100%; border-bottom: 2px #333 solid; font-size: 14pt;font-weight: bold;padding:4px;margin:0'>".$book->title." <span style=\"font-size:11pt; font-weight:normal;\"><br />by ".$book->author."</a></p>"; 
-      }
-    } 
-
-    // Close 
 
 
 function getSuffix($file) {
@@ -86,53 +87,53 @@ function getSuffix($file) {
   return $suffix;
 }
 
-function listdir_by_date($path){
-    $dir = opendir($path);
-    $list = array();
-    while($file = readdir($dir)){
-        if ($file != '.' and $file != '..'){
-            // add the filename, to be sure not to
-            // overwrite a array key
-            $ctime = filemtime($data_path . $file) . ',' . $file;
-            $list[$ctime] = $file;
-        }
-    }
-    closedir($dir);
-    krsort($list);
-    return $list;
+function listdir_by_date($path, $db){
+  return $db->getBooklist();
 }
-function listdir_by_author($path){
-    $dir = opendir($path);
-    $list = array();
-    while($file = readdir($dir)){
-        if ($file != '.' and $file != '..'){
-            // add the filename, to be sure not to
-            // overwrite a array key
-          list($name, $suffix) = explode('.', $file);
-          if($suffix == 'epub') {
-            $book = new ebook($file);
-            $list[$book->sortauthor.$book->title] = $file;
-          }
-        }
-    }
-    closedir($dir);
-    ksort($list);
-    return $list;
+function listdir_by_author($path, $db){
+  return $db->getAuthorlist('sortauthor asc');
 }
-function listdir_by_name($path){
-    $dir = opendir($path);
-    $list = array();
-    while($file = readdir($dir)){
-        if ($file != '.' and $file != '..'){
-            // add the filename, to be sure not to
-            // overwrite a array key
-            $ctime = filectime($data_path . $file) . ',' . $file;
-            $list[strtolower($file)] = $file;
-        }
-    } 
-    closedir($dir);
-    ksort($list);
-    return $list;
+function listdir_by_name($path, $db){
+  return $db->getBooklist('title asc');
+}
+
+function printBookList($list) {
+  foreach($list as $book) {
+    if(strlen($book->title) > 0) {
+      echo "<p style='padding:0;margin:0'><a href=\"".getproto()."://".SERVER.BASEURL."/get/".$book->id."/".$book->title."\" style='color: #333;text-decoration:none; display:block; width: 100%; border-bottom: 2px #333 solid; font-size: 14pt;font-weight: bold;padding:4px;margin:0'>".$book->title." <span style=\"font-size:11pt; font-weight:normal;\"><br />by ".$book->author."</a></p>";
+    }
+  }
+}
+
+function printAuthorList($list) {
+  foreach($list as $id => $author) {
+      echo "<p style='padding:0;margin:0'><a href=\"http://".SERVER.BASEURL."/author/".$author[name]."/\" style='color: #333;text-decoration:none; display:block; width: 100%; border-bottom: 2px #333 solid; font-size: 14pt;font-weight: bold;padding:4px;margin:0'>".$id." <span style=\"font-size:11pt; font-weight:normal;\"><br />Books: ".implode(', ', $author['books'])."</a></p>";
+  }
+}
+
+function printHeader() {
+$self = $_SERVER['PHP_SELF'];
+$head = <<<EOT
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta name='viewport' content='width=320,user-scalable=false' />	<title>TH's Library Devel</title>
+</head>
+<body style='padding:0;margin:0;'>
+<p style='margin:0;border-bottom: 2px #333 solid;padding:0;width:100%'><a href="$self?sort=name" style='color: #333;text-decoration:none; display:block; border-right: 2px #333 solid; font-size: 16pt;padding:4px;margin:0;float:left;text-align:center;'>by Name</a><a href="$self?sort=date" style='color: #333;text-decoration:none; display:block; border-right: 2px #333 solid;font-size: 16pt;padding:4px;margin:0;float:left;text-align:center'>by Date</a><a href="$self?sort=author" style='color: #333;text-decoration:none; display:block; border-right: 2px #333 solid;font-size: 16pt;padding:4px;margin:0;float:left;text-align:center'>by Author</a><br style="clear:both"></p>
+EOT;
+echo $head;
+}
+
+function getproto() {
+    if(strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false) {
+    return "epub";
+  } else {
+    return "http";
+  }
+
 }
 ?>
 </body>

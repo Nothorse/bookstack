@@ -8,6 +8,9 @@ class ebook {
   public $id;
   public $path;
   public $file;
+  public $tags;
+  public $allmeta;
+  public $metaelements;
 //   public $manifest;
 //   public $spine;
   
@@ -75,18 +78,40 @@ class ebook {
       $xml =  simplexml_load_string($zip->getFromName($rootfile), 'SimpleXMLElement', LIBXML_NSCLEAN)->children('http://www.idpf.org/2007/opf');
       $opf = $xml->metadata;
       $meta = $opf->children('http://purl.org/dc/elements/1.1/');
-//       $this->manifest = $xml->manifest->children();
-//       $this->spine = $xml->spine->children();
       $this->title   = (string) $meta->title[0];
       $this->author  = (string) $meta->creator[0];
       $this->sortauthor = strtolower($this->author);
-      //$this->path = $this->cleanup_file($epub);
+      $this->tags = (array) $meta['subject'];
       $this->summary = (string) $meta->description[0];
       if ($this->summary == '') {
         $this->summary = "No summary for this book yet.";
       }
+      $this->allmeta = $meta;
       //$this->cover = $this->is_cover($zip, $epub);
-      //$this->create_id();
+      $this->create_id();
+      // test with DOM
+      $dom = new DomDocument();
+      $dom->loadXML($zip->getFromName($rootfile));
+      $meta = $dom->getElementsByTagName('metadata')->item(0);
+      foreach($meta->childNodes as $id => $node) {
+        $this->metaelements[] = "$id: " . $node->nodeName .' -- '.$node->nodeValue;
+      
+      }
+      $this->title = $meta->getElementsByTagName('title')->item(0)->nodeValue;
+      $taglist = $dom->getElementsByTagName('subject');
+      foreach($taglist as $id => $tagnode) {
+        $this->tags[$id] = $tagnode->nodeValue;
+      }
+      while($taglist->length > 0) {
+        $meta->removeChild($taglist->item(0));
+      }
+      $this->tags[] = 'fun';
+      foreach($this->tags as $id => $tag) {
+        $meta->appendChild($dom->createElementNS('http://purl.org/dc/elements/1.1/', 'dc:subject', $tag));
+      }
+      $dom->normalize();
+      $dom->formatOutput = true;
+      $this->allmeta = $dom->saveXML();
       $zip->close();
       return $this;
     }else{
@@ -117,8 +142,11 @@ class ebook {
     return 'defaultcover.jpg';
   }
   
-  function cleanup_file($epub) {
-    $canonicaldir = giles::bookdir() . '/' . $this->sanitize($this->sortauthor) .'/' . $this->sanitize($this->title);
+  function cleanupFile($epub = null, $bookdir = "/Users/thomas/Books") {
+    if(!$epub) {
+      $epub = $this->file;
+    }
+    $canonicaldir = $bookdir . '/' . $this->sanitize($this->author) .'/' . $this->sanitize($this->title);
     $canonicalname = $canonicaldir . '/' . basename($epub);
     if (dirname($epub) != $canonicaldir) {
       mkdir($canonicaldir, 0755, true);
@@ -144,8 +172,7 @@ class ebook {
   
   function modify_meta() {
     $zip = new ZipArchive;
-    $fileToModify = 'myfile.txt';
-    if ($zip->open('test1.zip') === TRUE) {
+    if ($zip->open($this->file) === TRUE) {
       //Read contents into memory
       $oldContents = $zip->getFromName($fileToModify);
       //Modify contents:
@@ -163,7 +190,8 @@ class ebook {
   }
   
   function sanitize($string) {
-      return ereg_replace('[^A-Za-z0-9-]', '', $string);
+    return $string;
+      //return ereg_replace('[^A-Za-z0-9- ]', '', $string);
   }
   
   function edit_book($key, $val) {
@@ -176,6 +204,10 @@ class ebook {
       return substr($this->summary, 0, 100) . "...";
     }
     return $this->summary;
+  }
+  
+  public function __toString() {
+    return basename($this->file);
   }
   
 }
