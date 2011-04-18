@@ -11,7 +11,7 @@ class ebook {
   public $tags;
   public $allmeta;
   public $metaelements;
-//   public $manifest;
+  public $manifest;
 //   public $spine;
   
   public function __construct($epub = null) {
@@ -75,6 +75,8 @@ class ebook {
       $container = simplexml_load_string($zip->getFromName(ebook::CONTAINER));
 //       $rootfile = $container->rootfiles->rootfile['full-path'];
       $rootfile = $this->get_metafile($zip);
+      $path = dirname($rootfile);
+      $this->path = ($path != '.') ? $path . '/':'';
       $xml =  simplexml_load_string($zip->getFromName($rootfile), 'SimpleXMLElement', LIBXML_NSCLEAN)->children('http://www.idpf.org/2007/opf');
       $opf = $xml->metadata;
       $meta = $opf->children('http://purl.org/dc/elements/1.1/');
@@ -93,11 +95,9 @@ class ebook {
       $dom = new DomDocument();
       $dom->loadXML($zip->getFromName($rootfile));
       $meta = $dom->getElementsByTagName('metadata')->item(0);
-      foreach($meta->childNodes as $id => $node) {
-        $this->metaelements[] = "$id: " . $node->nodeName .' -- '.$node->nodeValue;
-      
-      }
       $this->title = $meta->getElementsByTagName('title')->item(0)->nodeValue;
+      $this->author = $meta->getElementsByTagName('creator')->item(0)->nodeValue;
+      $this->summary = $meta->getElementsByTagName('description')->item(0)->nodeValue;
       $taglist = $dom->getElementsByTagName('subject');
       foreach($taglist as $id => $tagnode) {
         $this->tags[$id] = $tagnode->nodeValue;
@@ -105,18 +105,31 @@ class ebook {
       while($taglist->length > 0) {
         $meta->removeChild($taglist->item(0));
       }
-      $this->tags[] = 'fun';
       foreach($this->tags as $id => $tag) {
         $meta->appendChild($dom->createElementNS('http://purl.org/dc/elements/1.1/', 'dc:subject', $tag));
       }
-      $dom->normalize();
-      $dom->formatOutput = true;
-      $this->allmeta = $dom->saveXML();
+      $this->allmeta = $dom;
+      $manifest = $dom->getElementsByTagName('manifest')->item(0);
+      foreach($manifest->childNodes as $id => $node) {
+        if($node->nodeType != XML_TEXT_NODE) {
+          $this->manifest[$node->getAttribute('id')] = $node->getAttribute('href');
+        }
+      }
+
       $zip->close();
       return $this;
     }else{
       return 'failed';
     }
+  }
+  
+  function prettyprint($dom) {
+      $dom->normalize();
+      $dom->preserveWhiteSpace = false;
+      $dom->formatOutput = true;
+      $outXML = $dom->saveXML(); 
+      $dom->loadXML($outXML); 
+      return $dom;
   }
   
   function get_metafile($zip) {
@@ -156,27 +169,40 @@ class ebook {
     return $epub;
   }
   
-  function extract_chapter($idref) {
-//     foreach($this->manifest as $id => $item) {
-//       if ($item['id'] == $idref) {
-//         $chapter = $item['href'];
-//       }
-//     }
-//     if (isset($chapter)){
-//       $zip = new ZipArchive;
-//       if ($zip->open($this->path)===TRUE){
-//         return $zip->getFromName($chapter);
-//       }
-//     }
+  function getChapter($idref) {
+    foreach($this->manifest as $id => $href) {
+      if ($id == $idref) {
+        $chapter = $href;
+      }
+    }
+    if (isset($chapter)){
+      $zip = new ZipArchive;
+      if ($zip->open($this->file)===TRUE){
+        return $zip->getFromName($this->path.$chapter);
+      }
+    }
   }
   
   function modify_meta() {
     $zip = new ZipArchive;
     if ($zip->open($this->file) === TRUE) {
+      $fileToModify = $this->get_metafile($zip);
       //Read contents into memory
       $oldContents = $zip->getFromName($fileToModify);
       //Modify contents:
-      $newContents = str_replace('key', $_GET['param'], $oldContents);
+      $meta = $this->allmeta->getElementsByTagName('metadata')->item(0);
+      $meta->getElementsByTagName('creator')->item(0)->nodeValue = $this->author;
+      $meta->getElementsByTagName('title')->item(0)->nodeValue =  $this->title;
+      //tags
+      $taglist = $meta->getElementsByTagName('subject');
+      while($taglist->length > 0) {
+        $meta->removeChild($taglist->item(0));
+      }
+      foreach($this->tags as $id => $tag) {
+        $meta->appendChild($this->allmeta->createElementNS('http://purl.org/dc/elements/1.1/', 'dc:subject', $tag));
+      }
+      
+      $newContents = $this->prettyprint($this->allmeta)->saveXML();
       //Delete the old...
       $zip->deleteName($fileToModify);
       //Write the new...

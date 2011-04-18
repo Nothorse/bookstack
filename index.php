@@ -53,6 +53,17 @@ header("X-SELFZURL: ".SERVER.BASEURL);
     print_r($newbook);
     exit;
   }
+  
+  if($path[0] == 'edit') {
+  }
+  
+  if($path[0] == 'read') {
+    $book = $db->getBook($path[1]);
+    $realbook = new ebook($book->file);
+    header("Content-type: text/html");
+    echo $realbook->getChapter($path[2]);
+    exit;
+  }
 
   $items = listdir_by_date($path, $db);
   foreach ($items as $id => $item) {
@@ -112,7 +123,7 @@ function printAuthorList($list) {
 }
 
 function printHeader() {
-$self = $_SERVER['PHP_SELF'];
+$self = 'http://'.SERVER.BASEURL;
 $head = <<<EOT
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
