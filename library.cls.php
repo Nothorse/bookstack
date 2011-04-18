@@ -43,6 +43,24 @@ class library{
                 )")
         ) exit ("Create SQLite Database Error\n");
     }
+    $q=$this->db->query("PRAGMA table_info(tags)");
+    if ($q->fetchArray() < 1) {
+        if (!$this->db->exec("
+            CREATE TABLE tags (
+                id INTEGER NOT NULL PRIMARY KEY,
+                tag VARCHAR ( 255 ) NOT NULL UNIQUE
+                )")
+        ) exit ("Create SQLite Database Error\n");
+    }
+    $q=$this->db->query("PRAGMA table_info(taggedbooks)");
+    if ($q->fetchArray() < 1) {
+        if (!$this->db->exec("
+            CREATE TABLE taggedbooks (
+                bookid INTEGER NOT NULL,
+                tagid  INTEGER NOT NULL
+                )")
+        ) exit ("Create SQLite Database Error\n");
+    }
   }
   
   public function insertBook($ebook) {
@@ -62,19 +80,62 @@ class library{
                     '".sqlite_escape_string($ebook->id)."', 
                     '".time()."')";
     $this->db->exec($qry);
+    $qry = "select * from books where md5id = '".$ebook->id."'";
+    $res = $this->db->query($qry);
+    $row = $res->fetcharray();
+    $bookid = $row['id'];
+    $this->db->exec("DELETE FROM taggedbooks WHERE bookid = '$bookid'");
+    foreach($ebook->tags as $id => $tag) {
+      $qry = "select id from tags where tag = '$tag'";
+      $tagid = $this->db->querySingle($qry);
+      if (!$tagid) {
+        $this->db->exec("insert into tags (tag) values ('$tag')");
+        $tagid = $this->db->querySingle($qry);
+      }
+      $this->db->exec("INSERT INTO taggedbooks (bookid, tagid) values ('$bookid', '$tagid')");
+    }
+  }
+  
+  public function updateBook($ebook) {
+    $qry = "update books
+              SET  title = '".sqlite_escape_string($ebook->title)."', 
+                  author = '".sqlite_escape_string($ebook->author)."', 
+              sortauthor = '".sqlite_escape_string($ebook->sortauthor)."', 
+                 summary = '".sqlite_escape_string($ebook->summary)."'
+             WHERE md5id = '".sqlite_escape_string($ebook->id)."'"; 
+    $this->db->exec($qry);
+    $qry = "select * from books where md5id = '".$ebook->id."'";
+    $res = $this->db->query($qry);
+    $row = $res->fetcharray();
+    $bookid = $row['id'];
+    $this->db->exec("DELETE FROM taggedbooks WHERE bookid = '$bookid'");
+    foreach($ebook->tags as $id => $tag) {
+      $qry = "select id from tags where tag = '$tag'";
+      $tagid = $this->db->querySingle($qry);
+      if (!$tagid) {
+        $this->db->exec("insert into tags (tag) values ('$tag')");
+        $tagid = $this->db->querySingle($qry);
+      }
+      $this->db->exec("INSERT INTO taggedbooks (bookid, tagid) values ('$bookid', '$tagid')");
+    }
   }
   
   public function getBook($md5id) {
     $qry = "select * from books where md5id = '".$md5id."'";
     $res = $this->db->query($qry);
     $row = $res->fetcharray();
-        $book = new ebook();
-        $book->title = $row['title'];
-        $book->author = $row['author'];
-        $book->sortauthor = $row['sortauthor'];
-        $book->file = $row['file'];
-        $book->summary = $row['summary'];
-        $book->id = $row['md5id'];
+    $book = new ebook();
+    $book->title = $row['title'];
+    $book->author = $row['author'];
+    $book->sortauthor = $row['sortauthor'];
+    $book->file = $row['file'];
+    $book->summary = $row['summary'];
+    $book->id = $row['md5id'];
+    $tagquery = "select tag from tags join taggedbooks on taggedbooks.tagid = tags.id where taggedbooks.bookid = '" . $row['id'] . "'";
+    $tagres = $this->db->query($tagquery);
+    while($tagrow = $tagres->fetchArray()) {
+      $book->tags[] = $tagrow['tag'];
+    }
     return $book;
   }
   
@@ -107,5 +168,37 @@ class library{
     }  
     return $booklist;
   }
+  
+  public function getTagList() {
+    $booklist = array();
+    $qry = "select * from tags order by tag asc";
+    $res = $this->db->query($qry);
+    while ($row = $res->fetchArray()) {
+      if(strlen($row['tag']) > 0) {
+        $count = $this->db->querySingle("select count(bookid) from taggedbooks where tagid = '".$row['id']."'");
+        $booklist[$row['tag']]['name'] = $row['tag'];
+        $booklist[$row['tag']]['books'][] = $count; 
+      }
+    }  
+    return $booklist;
+  }
+  
+  public function getTaggedBooks($tag, $order = 'added desc') {
+    $booklist = array();
+    $qry = "select * from books join taggedbooks on taggedbooks.bookid = books.id join tags on tags.id = taggedbooks.tagid where tag = '$tag' order by $order";
+    $res = $this->db->query($qry);
+    while ($row = $res->fetchArray()) {
+        $book = new ebook();
+        $book->title = $row['title'];
+        $book->author = $row['author'];
+        $book->sortauthor = $row['sortauthor'];
+        $book->file = $row['file'];
+        $book->summary = $row['summary'];
+        $book->id = $row['md5id'];
+        $booklist[$book->sortauthor.$book->title] = $book;
+    }  
+    return $booklist;
+  }
+  
 }
 ?>

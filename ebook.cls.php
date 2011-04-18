@@ -199,7 +199,7 @@ class ebook {
         $meta->removeChild($taglist->item(0));
       }
       foreach($this->tags as $id => $tag) {
-        $meta->appendChild($this->allmeta->createElementNS('http://purl.org/dc/elements/1.1/', 'dc:subject', $tag));
+        $meta->appendChild($this->allmeta->createElementNS('http://purl.org/dc/elements/1.1/', 'dc:subject', trim($tag)));
       }
       
       $newContents = $this->prettyprint($this->allmeta)->saveXML();
@@ -209,9 +209,9 @@ class ebook {
       $zip->addFromString($fileToModify, $newContents);
       //And write back to the filesystem.
       $zip->close();
-      echo 'ok';
+      return 'ok';
     } else {
-      echo 'failed';
+      return 'failed';
     }
   }
   
