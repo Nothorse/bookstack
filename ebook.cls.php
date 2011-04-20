@@ -12,7 +12,8 @@ class ebook {
   public $allmeta;
   public $metaelements;
   public $manifest;
-//   public $spine;
+  public $toc;
+  public $spine;
   
   public function __construct($epub = null) {
     if (file_exists($epub)) {
@@ -110,12 +111,22 @@ class ebook {
       }
       $this->allmeta = $dom;
       $manifest = $dom->getElementsByTagName('manifest')->item(0);
-      foreach($manifest->childNodes as $id => $node) {
-        if($node->nodeType != XML_TEXT_NODE) {
+      foreach($manifest->getElementsByTagName('item') as $id => $node) {
           $this->manifest[$node->getAttribute('id')] = $node->getAttribute('href');
-        }
       }
-
+      $spine = $dom->getElementsByTagName('spine')->item(0);
+      foreach($spine->getElementsByTagName('itemref') as $id => $node) {
+          $this->spine[$node->getAttribute('idref')] = $this->manifest[$node->getAttribute('idref')];
+      }
+      // toc
+      $toc = new DomDocument();
+      $toc->loadXML($zip->getFromName($this->path.$this->manifest['ncx']));
+      $navlist = $toc->getElementsByTagName('navPoint');
+      foreach($navlist as $id => $navpoint) {
+        $label = $navpoint->getElementsByTagName('navLabel')->item(0)->getElementsByTagName('text')->item(0)->nodeValue;
+        $src = $navpoint->getElementsByTagName('content')->item(0)->getAttribute('src');
+        $this->toc[$label] = $src;
+      }
       $zip->close();
       return $this;
     }else{
@@ -128,7 +139,7 @@ class ebook {
       $dom->preserveWhiteSpace = false;
       $dom->formatOutput = true;
       $outXML = $dom->saveXML(); 
-      $dom->loadXML($outXML); 
+      $dom->loadXML($outXML,L, LIBXML_NSCLEAN); 
       return $dom;
   }
   

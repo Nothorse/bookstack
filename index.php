@@ -58,11 +58,17 @@ header("X-SELFZURL: ".SERVER.BASEURL);
     $newbook = new ebook($book->file);
     header("Content-Type: text/plain");
     print_r($newbook);
+    echo $newbook->allmeta->saveXML();
     exit;
   }
   
   if($path[0] == 'show') {
     $book = $db->getBook($path[1]);
+    if(getproto() == 'epub') {
+      header("Content-Type: application/epub");
+      echo file_get_contents($book->file);
+      exit;
+    }
     echo showDetails($book);
     exit;
   }
@@ -93,6 +99,13 @@ header("X-SELFZURL: ".SERVER.BASEURL);
     $realbook = new ebook($book->file);
     header("Content-type: text/html");
     echo $realbook->getChapter($path[2]);
+    exit;
+  }
+  
+  if($path[0] == 'delete') {
+    $book = $db->getBook($path[1]);
+    $db->deleteBook($book);
+    header("Location: http://".SERVER.BASEURL);
     exit;
   }
 
@@ -190,6 +203,7 @@ function getproto() {
 function showDetails($book, $protocol = 'http') {
   $geturl = "$protocol://".SERVER.BASEURL."/get/".$book->id.'/'.$book->title;
   $editurl = "http://".SERVER.BASEURL."/edit/".$book->id.'/'.$book->title;
+  $deleteurl = "http://".SERVER.BASEURL."/delete/".$book->id.'/'.$book->title;
   $details = <<<EOT
   <div id="details">
     <h1>$book->title</h1>
@@ -197,6 +211,7 @@ function showDetails($book, $protocol = 'http') {
     <p>$book->summary</p>
     <p><a href="$geturl">Download</a></p>
     <p><a href="$editurl">Edit Metadata</a></p>
+    <p><a href="$deleteurl">Delete Book</a></p>
   </div>
 EOT;
   return $details;

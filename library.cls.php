@@ -200,5 +200,12 @@ class library{
     return $booklist;
   }
   
+  public function deleteBook($book) {
+    $bookid = $this->db->querySingle('select id from books where md5id =\''.$book->id."'");
+    $this->db->exec("delete from books where id = '$bookid'");
+    $this->db->exec("delete from taggedbooks where bookid = '$bookid'");
+    rename(dirname($book->file), "/Users/".USER."/.Trash/".basename(dirname($book->file)));
+  }
+  
 }
 ?>
