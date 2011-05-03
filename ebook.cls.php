@@ -139,7 +139,7 @@ class ebook {
       $dom->preserveWhiteSpace = false;
       $dom->formatOutput = true;
       $outXML = $dom->saveXML(); 
-      $dom->loadXML($outXML,L, LIBXML_NSCLEAN); 
+      $dom->loadXML($outXML, LIBXML_NSCLEAN); 
       return $dom;
   }
   

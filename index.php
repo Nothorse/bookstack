@@ -69,6 +69,7 @@ header("X-SELFZURL: ".SERVER.BASEURL);
       echo file_get_contents($book->file);
       exit;
     }
+    printHeader();
     echo showDetails($book);
     exit;
   }
@@ -88,8 +89,10 @@ header("X-SELFZURL: ".SERVER.BASEURL);
         $realbook->tags[] = trim($tag);
       }
     }
+    $realbook->summary = (isset($_POST['summary'])) ? $_POST['summary']:$realbook->summary;
     $realbook->modify_meta();
     $db->updateBook($realbook);
+    printHeader();
     echo getEditForm($realbook, $url);
     exit;
   }
