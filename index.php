@@ -57,7 +57,7 @@ header("X-SELFZURL: ".SERVER.BASEURL);
     $book = $db->getBook($path[1]);
     $newbook = new ebook($book->file);
     header("Content-Type: text/plain");
-    print_r($newbook);
+    #print_r($newbook);
     echo $newbook->allmeta->saveXML();
     exit;
   }
@@ -70,7 +70,7 @@ header("X-SELFZURL: ".SERVER.BASEURL);
       exit;
     }
     printHeader();
-    echo showDetails($book);
+    echo showDetails(new ebook($book->file));
     exit;
   }
   
@@ -194,6 +194,11 @@ EOT;
 echo $head;
 }
 
+function buildPage() {
+
+
+}
+
 function getproto() {
     if(strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false) {
     return "epub";
@@ -207,6 +212,7 @@ function showDetails($book, $protocol = 'http') {
   $geturl = "$protocol://".SERVER.BASEURL."/get/".$book->id.'/'.$book->title;
   $editurl = "http://".SERVER.BASEURL."/edit/".$book->id.'/'.$book->title;
   $deleteurl = "http://".SERVER.BASEURL."/delete/".$book->id.'/'.$book->title;
+  $toc = $book->getFormattedToc("http://".SERVER.BASEURL);
   $details = <<<EOT
   <div id="details">
     <h1>$book->title</h1>
@@ -215,6 +221,8 @@ function showDetails($book, $protocol = 'http') {
     <p><a href="$geturl">Download</a></p>
     <p><a href="$editurl">Edit Metadata</a></p>
     <p><a href="$deleteurl">Delete Book</a></p>
+    <hr>
+    $toc
   </div>
 EOT;
   return $details;

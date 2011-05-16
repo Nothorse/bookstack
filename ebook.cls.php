@@ -14,6 +14,7 @@ class ebook {
   public $manifest;
   public $toc;
   public $spine;
+  public $lookup;
   
   public function __construct($epub = null) {
     if (file_exists($epub)) {
@@ -24,11 +25,11 @@ class ebook {
     }
   }
 
-  function create_id() {
+  public function create_id() {
     $this->id = md5('thcatgen'.$this->title.$this->author);
   }
   
-  function get_thumb($sz = 75, $inline = false) {
+  public function get_thumb($sz = 75, $inline = false) {
     if(!file_exists(dirname($this->path)."/thumb-$sz.png")) {
       $img = imagecreatefromjpeg($this->cover);
       $srcw = imagesy($img);
@@ -47,7 +48,7 @@ class ebook {
     }
   }
   
-  function get_cover($inline = false) {
+  public function get_cover($inline = false) {
     if(!file_exists(dirname($this->path)."/cover-resized.png")) {
     $img = imagecreatefromjpeg($this->cover);
     $srcw = imagesy($img);
@@ -70,7 +71,7 @@ class ebook {
    * @param  string $epub File reference
    * @return ebook        ebook with metadata filled in
    */
-  function get_meta($epub) {
+  public function get_meta($epub) {
     $zip = new ZipArchive;
     if ($zip->open($epub)===TRUE){
       $container = simplexml_load_string($zip->getFromName(ebook::CONTAINER));
@@ -113,6 +114,7 @@ class ebook {
       $manifest = $dom->getElementsByTagName('manifest')->item(0);
       foreach($manifest->getElementsByTagName('item') as $id => $node) {
           $this->manifest[$node->getAttribute('id')] = $node->getAttribute('href');
+          $this->lookup[$node->getAttribute('href')] = $node->getAttribute('id');
       }
       $spine = $dom->getElementsByTagName('spine')->item(0);
       foreach($spine->getElementsByTagName('itemref') as $id => $node) {
@@ -134,7 +136,7 @@ class ebook {
     }
   }
   
-  function prettyprint($dom) {
+  public function prettyprint($dom) {
       $dom->normalize();
       $dom->preserveWhiteSpace = false;
       $dom->formatOutput = true;
@@ -143,13 +145,13 @@ class ebook {
       return $dom;
   }
   
-  function get_metafile($zip) {
+  public function get_metafile($zip) {
       $container = simplexml_load_string($zip->getFromName(ebook::CONTAINER));
       $rootfile = $container->rootfiles->rootfile['full-path'];
       return $rootfile;
   }
   
-  function is_cover($zip, $epub) {
+  public function is_cover($zip, $epub) {
     // check for a cover in the Directory
     if (file_exists(dirname($epub).'/cover.jpg')) {
       return dirname($epub).'/cover.jpg';
@@ -166,7 +168,7 @@ class ebook {
     return 'defaultcover.jpg';
   }
   
-  function cleanupFile($epub = null, $bookdir = "/Users/thomas/Books") {
+  public function cleanupFile($epub = null, $bookdir = "/Users/thomas/Books") {
     if(!$epub) {
       $epub = $this->file;
     }
@@ -180,12 +182,13 @@ class ebook {
     return $epub;
   }
   
-  function getChapter($idref) {
+  public function getChapter($idref) {
     foreach($this->manifest as $id => $href) {
       if ($id == $idref) {
         $chapter = $href;
       }
     }
+    #print_r($this);
     if (isset($chapter)){
       $zip = new ZipArchive;
       if ($zip->open($this->file)===TRUE){
@@ -194,7 +197,18 @@ class ebook {
     }
   }
   
-  function modify_meta() {
+  
+  public function getFormattedToc($baseurl = '/') {
+    $ret = "<ul class='toc'>\n";
+    foreach($this->toc as $chaptername => $href) {
+      $ret .= "<li><a href='$baseurl/read/".$this->id."/".$this->lookup[$href]."'>$chaptername</a></li>";
+    }
+    $ret .= "</ul>";
+    return $ret;
+  }
+  
+  
+  public function modify_meta() {
     $zip = new ZipArchive;
     if ($zip->open($this->file) === TRUE) {
       $fileToModify = $this->get_metafile($zip);
@@ -226,16 +240,16 @@ class ebook {
     }
   }
   
-  function sanitize($string) {
+  public function sanitize($string) {
     return $string;
       //return ereg_replace('[^A-Za-z0-9- ]', '', $string);
   }
   
-  function edit_book($key, $val) {
+  public function edit_book($key, $val) {
     
   }
   
-  function trunc_summary($char) {
+  public function trunc_summary($char) {
     $ct = strlen($this->summary);
     if ($ct>$char) {
       return substr($this->summary, 0, 100) . "...";
