@@ -1,0 +1,43 @@
+p, p font,p span, blockquote, div {
+width: 500px;
+font-size: 20px;
+line-height: 28px;
+margin: 3px auto !important;
+font-family: 'Lucida Grande';
+font-weight: normal;
+border: none;
+}
+
+
+.toc {
+ position:fixed; 
+ top: -5px;
+/*
+ width: 250px;
+*/
+ left: -5px;
+ border: 2px #ccc solid;
+ border-bottom-right-radius: 15px;
+ padding: 10px;
+}
+
+.toc a{
+  color: #ddd;
+  display:block;
+  font-family: 'Lucida Grande';
+  font-weight: bold;
+}
+
+.toc li, .toc
+{
+	list-style-type: none;
+	margin:0;
+	padding:5px;
+}
+
+a {
+  text-decoration: none;
+  color: #ddd;
+  font-family: 'Lucida Grande';
+  font-weight: bold;
+}

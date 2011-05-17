@@ -192,19 +192,65 @@ class ebook {
     if (isset($chapter)){
       $zip = new ZipArchive;
       if ($zip->open($this->file)===TRUE){
-        return $zip->getFromName($this->path.$chapter);
+        $html = $zip->getFromName($this->path.$chapter);
       }
+      $html = $this->injectStyle($html);
+      $html = $this->injectBookTitle($html);
+      return $this->injectNavigation($html, $chapter);
     }
   }
   
+  public function injectNavigation($html, $chapter) {
+    $tochead = $this->getFormattedToc() . $this->getNextPrev($chapter);
+    $html = str_replace('<body>', $tochead, $html);
+    $html = str_replace('</body>', $this->getNextPrev($chapter), $html);
+    return $html;  
+  }
   
-  public function getFormattedToc($baseurl = '/') {
+  public function injectStyle($html) {
+    return str_replace('</head>', '<link rel="stylesheet" href="/read.css" type="text/css" media="all" /></head>', $html);
+  }
+  
+  public function injectBooktitle($html) {
+    return str_replace('<title>', '<title>'.$this->title.' - ', $html);
+  }
+  
+  public function getFormattedToc($baseurl = '/index.php') {
     $ret = "<ul class='toc'>\n";
     foreach($this->toc as $chaptername => $href) {
       $ret .= "<li><a href='$baseurl/read/".$this->id."/".$this->lookup[$href]."'>$chaptername</a></li>";
     }
     $ret .= "</ul>";
     return $ret;
+  }
+  
+  public function getNextPrev($currenthref, $baseurl = '/index.php') {
+    $current = null;
+    $prev = null;
+    $next = null;
+    foreach($this->toc as $title => $href) {
+      $current = $href;
+      if($href == $currenthref) {
+        break;
+      }
+      $prev = $href;
+    }
+    $current = '';
+    foreach($this->toc as $title => $href) {
+      $next = $href;
+      if($current == $currenthref) {
+        break;
+      }
+      $current = $href;
+    }
+    if (isset($prev)){
+      $link[] = "<a href='$baseurl/read/".$this->id."/".$this->lookup[$prev]."'>Previous Chapter</a>";
+    }
+    $link[] = "<a href='$baseurl/show/".$this->id."/".$this->lookup[$href]."'>Index</a>";
+    if (isset($next)){
+      $link[] = "<a href='$baseurl/read/".$this->id."/".$this->lookup[$next]."'>Next Chapter</a>";
+    }
+    return '<div class="nextprev">'.implode(' | ', $link) . '</div>';
   }
   
   

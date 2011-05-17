@@ -14,7 +14,7 @@ function ficdl($url) {
   $urlparts = explode('-', $_POST['url']);
   $u = $urlparts[1];
   $curlstr = "/Users/thomas/bin/ficdl $url epub";
-  echo "Getting The book\n";
+  echo "Getting The book: ".$_GET['title']."\n";
   echo "<pre>";
   echo system("$curlstr");
   echo "</pre>";

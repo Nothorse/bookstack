@@ -169,9 +169,12 @@ class library{
     return $booklist;
   }
   
-  public function getTagList() {
+  public function getTagList($updatedtags = true) {
     $booklist = array();
-    $qry = "select * from tags order by tag asc";
+    if(!$updatedtags) {
+      $where = " where tag not like 'last update%'";
+    }
+    $qry = "select * from tags $where order by tag asc";
     $res = $this->db->query($qry);
     while ($row = $res->fetchArray()) {
       if(strlen($row['tag']) > 0) {

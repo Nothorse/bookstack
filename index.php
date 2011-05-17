@@ -39,17 +39,25 @@ header("X-SELFZURL: ".SERVER.BASEURL);
   }
 
   if ($path[0] == "author") {
+    setcookie('booksel', 'author', 0, '/');
     list($discard,$method, $author) = explode('/', $_SERVER['PATH_INFO']);
-    $list = $db->getBookList('added desc', 'where author = \'' . $path[1] . '\'');
+    setcookie('selval', $author, 0, '/');
+    $list = $db->getBookList('added desc', 'where author = \'' . sqlite_escape_string($path[1]) . '\'');
     printHeader();
-    printBookList($list);
+    $alist = listdir_by_author($path, $db);
+    printAuthorList($alist, 'author', $author);
+    printBookList($list, 'books');
     exit;
   }
   
   if ($path[0] == 'tag') {
+    setcookie('booksel', 'tag', 0, '/');
+    setcookie('selval', $path[1], 0, '/');
     $list = $db->getTaggedBooks($path[1]);
     printHeader();
-    printBookList($list);
+    $alist = $db->getTagList(false);
+    printAuthorList($alist, 'tag', $path[1]);
+    printBookList($list, 'books');
     exit;
   }
 
@@ -70,7 +78,15 @@ header("X-SELFZURL: ".SERVER.BASEURL);
       exit;
     }
     printHeader();
+    $type = (isset($_COOKIE['booksel']))? $_COOKIE['booksel'] : 'author';
+    $current = (isset($_COOKIE['selval']))? $_COOKIE['selval'] : $book->author;
+    $list = ($type == 'tag') ? $db->getTagList() : $db->getAuthorlist();
+    printAuthorList($list, $type, $current);
+    $booklist = ($type == 'tag')? $db->getTaggedBooks($current) : $db->getBookList('added desc', 'where author = \'' . sqlite_escape_string($current) . '\'');
+    printBookList($booklist, 'books', $path[1]);
     echo showDetails(new ebook($book->file));
+    setcookie('booksel', '');
+    setcookie('selval', '');
     exit;
   }
   
@@ -93,7 +109,16 @@ header("X-SELFZURL: ".SERVER.BASEURL);
     $realbook->modify_meta();
     $db->updateBook($realbook);
     printHeader();
+    printHeader();
+    $type = $_COOKIE['booksel'];
+    $current = $_COOKIE['selval'];
+    $list = ($type == 'tag') ? $db->getTagList() : $db->getAuthorlist();
+    printAuthorList($list, $type, $current);
+    $booklist = ($type == 'tag')? $db->getTaggedBooks($current) : $db->getBookList('added desc', 'where author = \'' . sqlite_escape_string($current) . '\'');
+    printBookList($booklist, 'books', $path[1]);
     echo getEditForm($realbook, $url);
+    setcookie('booksel', '');
+    setcookie('selval', '');
     exit;
   }
   
@@ -124,24 +149,28 @@ header("X-SELFZURL: ".SERVER.BASEURL);
     switch ($_GET['sort']) {
       case 'name':
         $list = listdir_by_name($path, $db);
-        printBookList($list);
+        printBookList($list, 'bookswide');
         break;
       case 'author':
         $list = listdir_by_author($path, $db);
         printAuthorList($list, 'author');
+        $books = $db->getBooklist('title asc');
+        printBookList($books, 'books');
         break;
       case 'date':
         $list = listdir_by_date($path, $db);
-        printBookList($list);
+        printBookList($list, 'bookswide');
         break;
       case 'tags':
-        $list = $db->getTagList();
+        $list = $db->getTagList(false);
         printAuthorList($list, 'tag');
         break;
       default:
         $list = listdir_by_date($path, $db);
         printBookList($list);
     }
+    setcookie('booksel', '');
+    setcookie('selval', '');
 
 
 function getSuffix($file) {
@@ -159,22 +188,54 @@ function listdir_by_name($path, $db){
   return $db->getBooklist('title asc');
 }
 
-function printBookList($list) {
+function printBookList($list, $divid = 'list', $curid = null) {
+  echo "<div id='$divid'><ul>";
   foreach($list as $book) {
+    $current =($curid == $book->id) ? ' class="current"' : '';
     if(strlen($book->title) > 0) {
-      echo "<p style='padding:0;margin:0'><a href=\"".getproto()."://".SERVER.BASEURL."/show/".$book->id."/".$book->title."\" style='color: #333;text-decoration:none; display:block; width: 100%; border-bottom: 2px #333 solid; font-size: 14pt;font-weight: bold;padding:4px;margin:0'>".$book->title." <span style=\"font-size:11pt; font-weight:normal;\"><br />by ".$book->author."</a></p>\n";
+      echo "<li$current><a href=\"".getproto()."://".SERVER.BASEURL."/show/".$book->id."/".$book->title."\">".$book->title." <span class=\"byline\">".$book->author."</a></li>\n";
     }
   }
+  echo "<ul></div>";
 }
 
-function printAuthorList($list, $what) {
+function printAuthorList($list, $what, $current= null) {
+  echo "<div id='list'><ul>";
   foreach($list as $id => $author) {
-      echo "<p style='padding:0;margin:0'><a href=\"http://".SERVER.BASEURL."/$what/".$author[name]."/\" style='color: #333;text-decoration:none; display:block; width: 100%; border-bottom: 2px #333 solid; font-size: 14pt;font-weight: bold;padding:4px;margin:0'>".$id." <span style=\"font-size:11pt; font-weight:normal;\"><br />Books: ".implode(', ', $author['books'])."</a></p>\n";
+    $class='';
+    if($current == $id) {
+      $class = " class='current'";
+    }
+    echo "<li$class><a href=\"http://".SERVER.BASEURL."/$what/".$author['name']."/\">".$id."</a></li>\n";
   }
+  echo "<ul></div>";
+  
+}
+
+function getFormattedList($type = 'author') {
+  $db = new library();
+  $list = $db->getAuthorList();
+  $formattedlist = "<ul>\n";
+  foreach($list as $author => $rec) {
+    $formattedlist .= "<li><a href=\"http://".SERVER.BASEURL."/$what/".$author['name']."/\">$author</a></li>\n";
+  }
+  $formattedlist .= '</ul>';
+  return $formattedlist;
+}
+
+function listTags() {
+  $db = new library();
+  $list = $db->getTagList(false);
+  $taglist = '';
+  foreach($list as $id => $tag) {
+    $taglist .= "<li><a href=\"\">".$tag['name']."</a></li>";
+  }
+  return "<ul>$taglist</ul>";
 }
 
 function printHeader() {
 $self = 'http://'.SERVER.BASEURL;
+$taglist = listTags();
 $head = <<<EOT
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -182,14 +243,28 @@ $head = <<<EOT
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <meta name='viewport' content='width=320,user-scalable=false' />	<title>TH's Library Devel</title>
+<link rel="stylesheet" href="/ui.css" type="text/css" media="all">
 </head>
 <body style='padding:0;margin:0;'>
-<p style='margin:0;border-bottom: 2px #333 solid;padding:0;width:100%'>
-<a href="$self?sort=name" style='color: #333;text-decoration:none; display:block; border-right: 2px #333 solid; font-size: 16pt;padding:4px;margin:0;float:left;text-align:center;'>by Name</a>
-<a href="$self?sort=date" style='color: #333;text-decoration:none; display:block; border-right: 2px #333 solid;font-size: 16pt;padding:4px;margin:0;float:left;text-align:center'>by Date</a>
-<a href="$self?sort=tags" style='color: #333;text-decoration:none; display:block; border-right: 2px #333 solid;font-size: 16pt;padding:4px;margin:0;float:left;text-align:center'>by Tags</a>
-<a href="$self?sort=author" style='color: #333;text-decoration:none; display:block; border-right: 2px #333 solid;font-size: 16pt;padding:4px;margin:0;float:left;text-align:center'>by Author</a><br style="clear:both"></p>
-
+<div id="bluebar">
+<ul>
+<li class="category">
+<a href="$self?sort=name">Books</a>
+</li>
+<li class="category">
+<a href="$self?sort=author">Authors</a>
+</li>
+<li class="category">
+<a href="$self?sort=date">Recently Added</a>
+</li>
+<li class="category">
+<a href="$self?sort=tags">Tags</a>
+</li>
+<li class="category">
+<a href="$self?sort=list">Lists</a>
+</li>
+</ul>
+</div>
 EOT;
 echo $head;
 }
@@ -215,14 +290,11 @@ function showDetails($book, $protocol = 'http') {
   $toc = $book->getFormattedToc("http://".SERVER.BASEURL);
   $details = <<<EOT
   <div id="details">
+    $toc
     <h1>$book->title</h1>
     <h2>$book->author</h2>
     <p>$book->summary</p>
-    <p><a href="$geturl">Download</a></p>
-    <p><a href="$editurl">Edit Metadata</a></p>
-    <p><a href="$deleteurl">Delete Book</a></p>
-    <hr>
-    $toc
+    <p><a href="$geturl">Download</a> | <a href="$editurl">Edit Metadata</a> | <a href="$deleteurl">Delete Book</a></p>
   </div>
 EOT;
   return $details;
