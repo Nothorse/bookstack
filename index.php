@@ -47,6 +47,7 @@ header("X-SELFZURL: ".SERVER.BASEURL);
     $alist = listdir_by_author($path, $db);
     printAuthorList($alist, 'author', $author);
     printBookList($list, 'books');
+    printFoot();
     exit;
   }
   
@@ -58,6 +59,7 @@ header("X-SELFZURL: ".SERVER.BASEURL);
     $alist = $db->getTagList(false);
     printAuthorList($alist, 'tag', $path[1]);
     printBookList($list, 'books');
+    printFoot();
     exit;
   }
 
@@ -87,6 +89,7 @@ header("X-SELFZURL: ".SERVER.BASEURL);
     echo showDetails(new ebook($book->file));
     setcookie('booksel', '');
     setcookie('selval', '');
+    printFoot();
     exit;
   }
   
@@ -119,6 +122,7 @@ header("X-SELFZURL: ".SERVER.BASEURL);
     echo getEditForm($realbook, $url);
     setcookie('booksel', '');
     setcookie('selval', '');
+    printFoot();
     exit;
   }
   
@@ -167,7 +171,7 @@ header("X-SELFZURL: ".SERVER.BASEURL);
         break;
       default:
         $list = listdir_by_date($path, $db);
-        printBookList($list);
+        printBookList($list, 'bookswide');
     }
     setcookie('booksel', '');
     setcookie('selval', '');
@@ -243,6 +247,7 @@ $head = <<<EOT
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <meta name='viewport' content='width=320,user-scalable=false' />	<title>TH's Library Devel</title>
+<script src="/jquery.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <link rel="stylesheet" href="/ui.css" type="text/css" media="all">
 </head>
 <body style='padding:0;margin:0;'>
@@ -352,6 +357,19 @@ textarea {
 EOT;
 return $form;
 }
-?>
+
+function printFoot() {
+  $foot = <<<EOT
+<script type="text/javascript" language="javascript" charset="utf-8">
+var pos = $('#list li.current').position().top;
+pos = pos - 100;
+$('#list').scrollTop(pos);
+var pos = $('#books li.current').position().top;
+//pos = pos - 100;
+$('#books').scrollTop(pos);
+</script>
 </body>
 </html>
+EOT;
+  echo $foot;
+ }
