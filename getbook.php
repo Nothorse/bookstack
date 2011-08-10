@@ -13,7 +13,7 @@ if ($_GET['url']) {
 function ficdl($url) {
   $urlparts = explode('-', $_POST['url']);
   $u = $urlparts[1];
-  $curlstr = "/Users/thomas/bin/ficdl $url epub";
+  $curlstr = __DIR__."/lib/ficdl $url epub";
   echo "Downloading ".$_GET['title']."\n";
   echo "<pre>";
   echo system("$curlstr");

@@ -7,6 +7,9 @@
  * 
  * Name this file index.php and place in the directory. 
  */ 
+//deactivate errordisplay
+error_reporting(0);
+
 
 // Define the full path to your folder from root 
 $path = "/Users/thomas/public/ffic/"; 
@@ -79,16 +82,16 @@ header("X-SELFZURL: ".SERVER.BASEURL);
       echo file_get_contents($book->file);
       exit;
     }
-    printHeader();
     $type = (isset($_COOKIE['booksel']))? $_COOKIE['booksel'] : 'author';
     $current = (isset($_COOKIE['selval']))? $_COOKIE['selval'] : $book->author;
+    setcookie('booksel', '');
+    setcookie('selval', '');
     $list = ($type == 'tag') ? $db->getTagList() : $db->getAuthorlist();
+    printHeader();
     printAuthorList($list, $type, $current);
     $booklist = ($type == 'tag')? $db->getTaggedBooks($current) : $db->getBookList('added desc', 'where author = \'' . sqlite_escape_string($current) . '\'');
     printBookList($booklist, 'books', $path[1]);
     echo showDetails(new ebook($book->file));
-    setcookie('booksel', '');
-    setcookie('selval', '');
     printFoot();
     exit;
   }
@@ -111,17 +114,16 @@ header("X-SELFZURL: ".SERVER.BASEURL);
     $realbook->summary = (isset($_POST['summary'])) ? $_POST['summary']:$realbook->summary;
     $realbook->modify_meta();
     $db->updateBook($realbook);
-    printHeader();
-    printHeader();
     $type = $_COOKIE['booksel'];
     $current = $_COOKIE['selval'];
+    setcookie('booksel', '');
+    setcookie('selval', '');
     $list = ($type == 'tag') ? $db->getTagList() : $db->getAuthorlist();
+    printHeader();
     printAuthorList($list, $type, $current);
     $booklist = ($type == 'tag')? $db->getTaggedBooks($current) : $db->getBookList('added desc', 'where author = \'' . sqlite_escape_string($current) . '\'');
     printBookList($booklist, 'books', $path[1]);
     echo getEditForm($realbook, $url);
-    setcookie('booksel', '');
-    setcookie('selval', '');
     printFoot();
     exit;
   }
@@ -149,6 +151,8 @@ header("X-SELFZURL: ".SERVER.BASEURL);
   }
 
 
+    setcookie('booksel', '');
+    setcookie('selval', '');
     printHeader();
     switch ($_GET['sort']) {
       case 'name':
@@ -173,8 +177,6 @@ header("X-SELFZURL: ".SERVER.BASEURL);
         $list = listdir_by_date($path, $db);
         printBookList($list, 'bookswide');
     }
-    setcookie('booksel', '');
-    setcookie('selval', '');
 
 
 function getSuffix($file) {
@@ -246,7 +248,7 @@ $head = <<<EOT
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<meta name='viewport' content='width=320,user-scalable=false' />	<title>TH's Library Devel</title>
+<meta name='viewport' content='width=620,user-scalable=true' />	<title>TH's Library Devel</title>
 <script src="/jquery.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <link rel="stylesheet" href="/ui.css" type="text/css" media="all">
 </head>

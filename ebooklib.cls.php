@@ -20,14 +20,23 @@ class EbookLib() {
     $this->requestParam = $path[2];
   }
   
-  public function handleRequest() {
+  public function handleRequest($displaytype = 'Browser') {
     $method = 'handle' + strtoupper($this->request);
+    $display = new $displaytype;
     if(method_exists($this, $method)) {
-      $this->$method();
+      $this->$method($display);
+    } else {
+      $this->handleLIST($display);
     }
   }
   
-  private function handleLIST() {}
+  private function handleLIST($display) {
+    switch($this->requestId) {
+     case 'author':
+      
+     case date:
+    }
+  }
   
   private function handleREAD() {}
   
