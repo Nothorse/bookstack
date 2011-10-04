@@ -9,7 +9,7 @@
  */ 
 //deactivate errordisplay
 error_reporting(0);
-
+define('SHELL', false);
 
 // Define the full path to your folder from root 
 $path = "/Users/thomas/public/ffic/"; 

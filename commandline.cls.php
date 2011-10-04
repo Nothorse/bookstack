@@ -232,7 +232,7 @@ abstract class CommandLine {
     array_shift($args);
     $params = $cg->getopt2($args, $shortOpts, $longOpts);
     if (PEAR::isError($params)) {
-      fwrite(STDERR, 'Error: ' . $params->getMessage() . "\n");
+      echo 'Error: ' . $params->getMessage() . "\n";
       exit(1);
     }
     $cline_args = $this->condenseArguments($params);

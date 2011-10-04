@@ -1,6 +1,9 @@
-#!/usr/sbin/php-cgi -Cq
+#!/usr/sbin/php-cgi -Cq -d register_argc_argv=On
 <?php
-
+//ini_set('register_argc_argv', 'On');
+// ini_set('display_errors', '0');     # don't show any errors...
+//error_reporting(E_ALL | E_STRICT); 
+define('SHELL', true);
 /**
  * Needs to manually require the parent class, as it is called outside the weblication framework
  */
@@ -9,7 +12,7 @@ require_once(__DIR__ . "/commandline.cls.php");
 require_once(__DIR__ . "/ebook.cls.php");
 require_once(__DIR__ . "/library.cls.php");
 $path = '/usr/lib/php';
-set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+set_include_path(get_include_path() . PATH_SEPARATOR . $path. PATH_SEPARATOR . 'Users/thomas/Documents/intevo/tbx/teambox/includes');
 
 class AddBook extends CommandLine {
   
