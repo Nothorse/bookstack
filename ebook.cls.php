@@ -15,6 +15,7 @@ class ebook {
   public $toc;
   public $spine;
   public $lookup;
+  public $updated;
   
   public function __construct($epub = null) {
     if (file_exists($epub)) {

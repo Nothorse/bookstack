@@ -139,9 +139,10 @@ class library{
     return $book;
   }
   
-  public function getBooklist($order = 'added desc', $where = '') {
+  public function getBooklist($order = 'added desc', $where = '', $limit = false) {
     $booklist = array();
-    $qry = "select * from books $where order by $order";
+    $limstr = ($limit) ? " LIMIT 30": '';
+    $qry = "select * from books $where order by $order $limstr";
     $res = $this->db->query($qry);
     while ($row = $res->fetchArray()) {
         $book = new ebook();
@@ -151,6 +152,7 @@ class library{
         $book->file = $row['file'];
         $book->summary = $row['summary'];
         $book->id = $row['md5id'];
+        $book->updated = $row['added'];
         $booklist[$book->sortauthor.$book->title] = $book;
     }  
     return $booklist;
@@ -198,6 +200,7 @@ class library{
         $book->file = $row['file'];
         $book->summary = $row['summary'];
         $book->id = $row['md5id'];
+        $book->updated = $row['added'];
         $booklist[$book->sortauthor.$book->title] = $book;
     }  
     return $booklist;

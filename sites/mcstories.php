@@ -1,37 +1,35 @@
 <?php
 require_once(dirname(__DIR__) . "/config.php");
-require_once(dirname(__DIR__) . "/commandline.cls.php");
-require_once(dirname(__DIR__) . "/ebook.cls.php");
-require_once(dirname(__DIR__) . "/library.cls.php");
-require_once(dirname(__DIR__) . "/epubgen/EPub.php");
-require_once(dirname(__DIR__) . "/epubgen/lib.uuid.php");
-require_once(dirname(__DIR__) . "/epubgen/Zip.php");
-#require_once(__DIR__ . "/epubgen/EpubChapterSplitter.php");
+require_once(dirname(__DIR__) . "/downloader.php");
 $path = '/usr/lib/php';
 set_include_path(get_include_path() . PATH_SEPARATOR . $path);
 
-class Downloader {
-  private $chapters = array();
-  private $author;
-  private $created;
-  private $updated;
-  private $title;
-  private $summary;
-  
-    
-  public function retrieveBook($url) {
+class McStories extends Downloader {
+
+  public function _construct() {
+    $this->publisher = array("Erotic Mind Control Stories Archive",     
+                             "http://mcstories.com/");
+    $this->subject = 'Erotica, Mind Control';
+  }
+
+  protected function getIndex($url, $adultcheck) {
     $storyurl = dirname($url) . "/";
     echo $storyurl . "\n";
     $dom = new DomDocument();
     $dom->formatOutput = true;
     $dom->normalize();
     $dom->loadHTMLFile($storyurl);
+    return $dom;  
+  } 
+
+  protected function parseChapterlist($dom) {
+    $chapters = array();
     $divs = $dom->getElementsByTagName('div');
     foreach($divs as $id => $chapterdiv) {
       $class = $chapterdiv->getAttribute('class');
       if($class == 'chapter') {
         $a = $chapterdiv->getElementsByTagName('a')->item(0);
-        $this->chapters[$a->textContent] = $a->getAttribute('href');
+        $chapters[$a->textContent] = $a->getAttribute('href');
       }
     }
     if(empty($this->chapters)) {
@@ -39,13 +37,19 @@ class Downloader {
       foreach($links as $id => $a) {
         $url = $a->getAttribute('href');
         if(strpos($url, '..') === false && strpos($url, 'http://') === false) {
-          $this->chapters[$a->textContent] = $a->getAttribute('href');
+          $chapters[$a->textContent] = $a->getAttribute('href');
         }
       }
     }
     if(empty($this->chapters)) {
       exit("No chapters found\n");
     }
+    return $chapters;
+  }
+
+  protected function getContent($dom);
+  
+  protected function getMetaData($dom) {
     $meta = $dom->getElementsByTagName('h3');
     foreach($meta as $id => $headline) {
       $class = $headline->getAttribute('class');
@@ -70,6 +74,9 @@ class Downloader {
     }
     $wholetext = $dom->getElementById('text');
     $this->summary = $wholetext->getElementsByTagName('p')->item(0)->textContent;
+  }
+
+  public function retrieveBook($url) {
     $this->getChapters($storyurl);
     // create the epub
     $book = new EPub();
