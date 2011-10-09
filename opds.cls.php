@@ -8,6 +8,18 @@ class opdsdisplay {
   
   const ATOM = 'http://www.w3.org/2005/Atom';
   
+  const BOOKLIST = 'application/atom+xml;profile=opds-catalog;kind=acquisition';
+  
+  const CATLIST = "application/atom+xml;profile=opds-catalog;kind=navigation";
+  
+  const BOOK = 'application/epub+zip';
+  
+  const RELSUBLIST = 'subsection';
+  
+  const RELDOWNLOAD = 'http://opds-spec.org/acquisition/open-access';
+  
+  
+  
   private $selfurl;
   
   public function __construct() {
@@ -24,31 +36,48 @@ class opdsdisplay {
     $author->appendChild($this->dom->createElementNS(self::ATOM, 'name', 'giles@grendel.at'));
     $this->feed->appendChild($author);
     $this->feed->appendChild($this->dom->createElementNS(self::ATOM, 'id', 'urn:uuid:60a76c80-d399-12d9-b91C-0883939e0af6'));
-    $link = $this->dom->createElementNS(self::ATOM, link);
-    $link->setAttribute('href', $this->selfurl);
-    $link->setAttribute('rel', 'self');
-    $link->setAttribute('type', "application/atom+xml;profile=opds-catalog;kind=navigation");
-    $this->feed->appendChild($link);
-    $link = $this->dom->createElementNS(self::ATOM, link);
-    $link->setAttribute('href', $this->selfurl);
-    $link->setAttribute('rel', 'start');
-    $link->setAttribute('type', "application/atom+xml;profile=opds-catalog;kind=navigation");
-    $this->feed->appendChild($link);
+    $this->feed->appendChild($this->createlink('self', $this->selfurl, self::CATLIST));
+    $this->feed->appendChild($this->createlink('start', $this->selfurl, self::CATLIST));
+  }
+
+  public function printNavigation() {
+    $entry = $this->dom->createElementNS(self::ATOM, 'entry');
+    $entry->appendChild($this->dom->createElementNS(self::ATOM, 'title', 'Recent Additions'));
+    $entry->appendChild($this->dom->createElementNS(self::ATOM, 'updated', date('c')));
+    $entry->appendChild($this->dom->createElementNS(self::ATOM, 'id', 'urn:giles:'.md5('recent')));
+      $entry->appendChild($this->createlink(self::RELSUBLIST, $this->selfurl . '?sort=recent', self::BOOKLIST));
+    $summary = $this->dom->createElementNS(self::ATOM, 'content', "Last 30 added books");
+    $summary->setAttribute('type', 'text');
+    $entry->appendChild($summary);
+    $this->feed->appendChild($entry);
+    //
     $entry = $this->dom->createElementNS(self::ATOM, 'entry');
     $entry->appendChild($this->dom->createElementNS(self::ATOM, 'title', 'Authors'));
     $entry->appendChild($this->dom->createElementNS(self::ATOM, 'updated', date('c')));
-    $entry->appendChild($this->dom->createElementNS(self::ATOM, 'id', 'urn:giles:8D2B9F95-9C40-44B1-A3A6-E3AB3907B035'));
-    $link = $this->dom->createElementNS(self::ATOM, 'link');
-    $link->setAttribute('rel', 'subsection');
-    $link->setAttribute('href', $this->selfurl . '/author/');
-    $link->setAttribute('type', 'application/atom+xml;profile=opds-catalog;kind=acquisition');
-    $entry->appendChild($link);
+    $entry->appendChild($this->dom->createElementNS(self::ATOM, 'id', 'urn:giles:'.md5('author')));
+      $entry->appendChild($this->createlink(self::RELSUBLIST, $this->selfurl . '/author/', self::BOOKLIST));
     $summary = $this->dom->createElementNS(self::ATOM, 'content', "Catalog by Author");
     $summary->setAttribute('type', 'text');
     $entry->appendChild($summary);
     $this->feed->appendChild($entry);
+    //
+    $entry = $this->dom->createElementNS(self::ATOM, 'entry');
+    $entry->appendChild($this->dom->createElementNS(self::ATOM, 'title', 'Categories'));
+    $entry->appendChild($this->dom->createElementNS(self::ATOM, 'updated', date('c')));
+    $entry->appendChild($this->dom->createElementNS(self::ATOM, 'id', 'urn:giles:'.md5('tag')));
+      $entry->appendChild($this->createlink(self::RELSUBLIST, $this->selfurl . '/tag/', self::BOOKLIST));
+    $summary = $this->dom->createElementNS(self::ATOM, 'content', "Catalog by Tags");
+    $summary->setAttribute('type', 'text');
+    $entry->appendChild($summary);
+    $this->feed->appendChild($entry);
+    $this->dom->appendChild($this->feed);
+    $this->dom->normalize();
+    $this->dom->preserveWhiteSpace = false;
+    $this->dom->formatOutput = true;
+    //$dom = $this->prettyprint($this->dom);
+    print $this->dom->saveXML();
   }
-
+  
   public function printBookList($list, $divid = 'list', $curid = null) {
     foreach ($list as $id => $book) {
       $entry = $this->dom->createElementNS(self::ATOM, 'entry');
@@ -78,17 +107,21 @@ class opdsdisplay {
   }
   
   public function printAuthorList($list, $what, $current= null) {
+    if($current) return;
     foreach ($list as $id => $author) {
+      if($author['name'] == '') continue;
       $entry = $this->dom->createElementNS(self::ATOM, 'entry');
       $entry->appendChild($this->dom->createElementNS(self::ATOM, 'title', $author['name']));
       $entry->appendChild($this->dom->createElementNS(self::ATOM, 'updated', date('c')));
       $entry->appendChild($this->dom->createElementNS(self::ATOM, 'id', 'urn:giles:'.md5($author['name'])));
       $link = $this->dom->createElementNS(self::ATOM, 'link');
-      $link->setAttribute('rel', 'subsection');
-      $link->setAttribute('href', $this->selfurl . '/author/'.urlencode($author['name']));
-      $link->setAttribute('type', 'application/atom+xml;profile=opds-catalog;kind=acquisition');
-      $entry->appendChild($link);
-      $summary = $this->dom->createElementNS(self::ATOM, 'content', "Works by ".$author['name']);
+      $entry->appendChild(
+        $this->createlink('subsection',
+                           $this->selfurl . "/$what/".urlencode($author['name']),
+                           self::BOOKLIST
+                          )
+                          );
+      $summary = ($what == 'author') ? $this->dom->createElementNS(self::ATOM, 'content', "Works by ".$author['name']) : $this->dom->createElementNS(self::ATOM, 'content', "Category is ".$author['name']);
       $summary->setAttribute('type', 'text');
       $entry->appendChild($summary);
       $this->feed->appendChild($entry);
@@ -124,23 +157,6 @@ class opdsdisplay {
   
   public function printHeader() {
     header('Content-type: application/xml');
-    /**
-    print '<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-<title>Book Catalog</title>
-<updated>'.date('c').'</updated>
-<author>
-<name>Giles</name>
-<uri>http://hacks.grendel.at/giles/</uri>
-<email>giles@grendel.at</email>
-</author>
-<subtitle>
-Local Library served by Giles
-</subtitle>
-<id>urn:uuid:60a76c80-d399-12d9-b91C-0883939e0af6</id>
-<link rel="self" type="application/atom+xml" href="http://thbuch.local:3215/"/>
-  ';
-  **/
   }
   
   public function buildPage() {
@@ -219,7 +235,7 @@ EOT;
   }
   
   public function printFoot() {
-    print '</feed>';
+//     print '</feed>';
    }
    
    
@@ -228,7 +244,7 @@ EOT;
    * @param  DOMDocument $dom
    * @return DOMDocument       return cleaned DOM
    */
-  function prettyprint($dom) {
+  private function prettyprint($dom) {
     $dom->normalize();
     $dom->preserveWhiteSpace = false;
     $dom->formatOutput = true;
@@ -237,5 +253,12 @@ EOT;
     return $dom;
   }
 
+  private function createLink($rel, $url, $type) {
+    $link = $this->dom->createElementNS(self::ATOM, 'link');
+    $link->setAttribute('rel', $rel);
+    $link->setAttribute('href', $url);
+    $link->setAttribute('type', $type);
+    return $link;
+  }
 
 }  

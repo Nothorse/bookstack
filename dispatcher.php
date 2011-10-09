@@ -61,9 +61,17 @@ class Dispatcher {
         $list = $db->getTagList(false);
         $this->display->printAuthorList($list, 'tag');
         break;
-      default:
+      case 'recent':
         $list = $this->listdir_by_date($path, $db, true);
         $this->display->printBookList($list, 'bookswide');
+        break;
+      default:
+        if (ODPS == PORT) {
+          $this->display->printNavigation();
+        } else {
+          $list = $this->listdir_by_date($path, $db, true);
+          $this->display->printBookList($list, 'bookswide');
+        }
     }
   }
 
@@ -83,7 +91,7 @@ class Dispatcher {
     $this->display->printHeader();
     $alist = $this->listdir_by_author($path, $db);
     $this->display->printAuthorList($alist, 'author', $author);
-    $this->display->printBookList($list, 'books');
+    if ($author) $this->display->printBookList($list, 'books');
     $this->display->printFoot();
     exit;
   }
@@ -95,7 +103,7 @@ class Dispatcher {
     $this->display->printHeader();
     $alist = $db->getTagList(false);
     $this->display->printAuthorList($alist, 'tag', $path[1]);
-    $this->display->printBookList($list, 'books');
+    if ($path[1]) $this->display->printBookList($list, 'books');
     $this->display->printFoot();
     exit;
   }
