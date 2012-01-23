@@ -37,7 +37,7 @@ class AddBook extends CommandLine {
     if($file) {
       $book = new ebook($file);
       $book->file = $book->cleanupFile($file);
-      echo $book->title . ' moved to '.$book->file . "\n";
+      echo "!" . $book->title . ' moved to '.$book->file."\n";
       $lib = new library();
       $lib->insertBook($book);
     } else {

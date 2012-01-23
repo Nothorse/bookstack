@@ -140,9 +140,10 @@ class library{
   }
   
   public function getBooklist($order = 'added desc', $where = '', $limit = false) {
+    $lwhere = urldecode($where); 
     $booklist = array();
     $limstr = ($limit) ? " LIMIT 30": '';
-    $qry = "select * from books $where order by $order $limstr";
+    $qry = "select * from books $lwhere order by $order $limstr";
     $res = $this->db->query($qry);
     while ($row = $res->fetchArray()) {
         $book = new ebook();
@@ -154,7 +155,8 @@ class library{
         $book->id = $row['md5id'];
         $book->updated = $row['added'];
         $booklist[$book->sortauthor.$book->title] = $book;
-    }  
+    } 
+    error_log("booklist where: $lwhere");
     return $booklist;
   } 
   

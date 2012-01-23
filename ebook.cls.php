@@ -18,6 +18,7 @@ class ebook {
   public $updated;
   
   public function __construct($epub = null) {
+    error_log("creating a ebook $epub");
     if (file_exists($epub)) {
       $this->file = $epub;
       return $this->get_meta($epub);
@@ -73,6 +74,7 @@ class ebook {
    * @return ebook        ebook with metadata filled in
    */
   public function get_meta($epub) {
+    error_log("test??");
     $zip = new ZipArchive;
     if ($zip->open($epub)===TRUE){
       $container = simplexml_load_string($zip->getFromName(ebook::CONTAINER));
@@ -131,8 +133,10 @@ class ebook {
         $this->toc[$label] = $src;
       }
       $zip->close();
+      error_log("Metadata read: " . print_r($this, true));
       return $this;
     }else{
+      error_log('Opening Book zip failed');
       return 'failed';
     }
   }

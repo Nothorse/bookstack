@@ -79,6 +79,8 @@ class opdsdisplay {
   }
   
   public function printBookList($list, $divid = 'list', $curid = null) {
+        error_log("booklist: ". print_r($list, true));
+
     foreach ($list as $id => $book) {
       $entry = $this->dom->createElementNS(self::ATOM, 'entry');
       $entry->appendChild($this->dom->createElementNS(self::ATOM, 'title', $book->title));
@@ -86,7 +88,7 @@ class opdsdisplay {
       $entry->appendChild($this->dom->createElementNS(self::ATOM, 'id', 'urn:giles:'.$book->id));
       $author = $this->dom->createElementNS(self::ATOM, 'author');
       $author->appendChild($this->dom->createElementNS(self::ATOM, 'name', $book->author));
-      $author->appendChild($this->dom->createElementNS(self::ATOM, 'uri', $this->selfurl . '/author/'.urlencode($book->author)));
+      $author->appendChild($this->dom->createElementNS(self::ATOM, 'uri', $this->selfurl . '/author/'.urlencode(str_replace(" ", '+', $book->author))));
       $entry->appendChild($author);
       $link = $this->dom->createElementNS(self::ATOM, 'link');
       $link->setAttribute('rel', 'http://opds-spec.org/acquisition/open-access');
