@@ -4,13 +4,14 @@ require_once('ebook.cls.php');
 require_once('opds.cls.php');
 require_once('browser.cls.php');
 require_once('library.cls.php');
+require_once('template.php');
 
 class Dispatcher {
 
   private $db;
 
   private $display;
-  
+
   public function __construct($odps = false) {
     $this->db = new library();
     if (!$odps) {
@@ -38,15 +39,19 @@ class Dispatcher {
 **/
     setcookie('booksel', '');
     setcookie('selval', '');
+    header("X-Clacks-Overhead: GNU Terry Pratchett");
     $this->display->printHeader();
-    switch ($_GET['sort']) {
+    $sort = (isset($_GET['sort'])) ? $_GET['sort'] : 'index';
+    switch ($sort) {
       case 'name':
         $list = $this->listdir_by_name($path, $db);
         $this->display->printBookList($list, 'bookswide');
         break;
       case 'author':
         $list = $this->listdir_by_author($path, $db);
-        $this->display->printAuthorList($list, 'author');
+        $this->display->printBookList($list, 'bookswide');
+
+//        $this->display->printAuthorList($list, 'author');
 /**
         $books = $db->getBooklist('title asc');
         $this->display->printBookList($books, 'books');
@@ -69,7 +74,7 @@ class Dispatcher {
         if (ODPS == PORT) {
           $this->display->printNavigation();
         } else {
-          $list = $this->listdir_by_date($path, $db, true);
+          $list = $this->listdir_by_date($path, $db, 1);
           $this->display->printBookList($list, 'bookswide');
         }
     }
@@ -87,7 +92,7 @@ class Dispatcher {
     setcookie('booksel', 'author', 0, '/');
     list($discard,$method, $author) = explode('/', $_SERVER['PATH_INFO']);
     setcookie('selval', $author, 0, '/');
-    $list = $db->getBookList('added desc', 'where author = \'' . sqlite_escape_string($path[1]) . '\'');
+    $list = $db->getBookList('added desc', 'where author = \'' . SQLite3::escapeString($path[1]) . '\'');
     $this->display->printHeader();
     $alist = $this->listdir_by_author($path, $db);
     $this->display->printAuthorList($alist, 'author', $author);
@@ -95,7 +100,7 @@ class Dispatcher {
     $this->display->printFoot();
     exit;
   }
-  
+
   public function handletag($db, $path) {
     setcookie('booksel', 'tag', 0, '/');
     setcookie('selval', $path[1], 0, '/');
@@ -116,7 +121,7 @@ class Dispatcher {
     echo $newbook->allmeta->saveXML();
     exit;
   }
-  
+
   public function handleshow($db, $path) {
     $book = $db->getBook($path[1]);
     if($this->getproto() == 'epub') {
@@ -130,15 +135,19 @@ class Dispatcher {
     setcookie('selval', '');
     $list = ($type == 'tag') ? $db->getTagList() : $db->getAuthorlist();
     $this->display->printHeader();
-    $this->display->printAuthorList($list, $type, $current);
-    $booklist = ($type == 'tag')? $db->getTaggedBooks($current) : $db->getBookList('added desc', 'where author = \'' . sqlite_escape_string($current) . '\'');
-    $this->display->printBookList($booklist, 'books', $path[1]);
+    //$this->display->printAuthorList($list, $type, $current);
+    $booklist = ($type == 'tag')? $db->getTaggedBooks($current) : $db->getBookList('added desc', 'where author = \'' . SQLite3::escapeString($current) . '\'');
+    //$this->display->printBookList($booklist, 'books', $path[1]);
     echo $this->display->showDetails(new ebook($book->file));
     $this->display->printFoot();
     exit;
   }
-  
-  public function handleedit($db, $path) {
+
+    /**
+     * @param Library $db
+     * @param $path
+     */
+    public function handleedit($db, $path) {
     $book = $db->getBook($path[1]);
     $realbook = new ebook($book->file);
     $realbook->id = $path[1];
@@ -162,14 +171,14 @@ class Dispatcher {
     setcookie('selval', '');
     $list = ($type == 'tag') ? $db->getTagList() : $db->getAuthorlist();
     $this->display->printHeader();
-    $this->display->printAuthorList($list, $type, $current);
-    $booklist = ($type == 'tag')? $db->getTaggedBooks($current) : $db->getBookList('added desc', 'where author = \'' . sqlite_escape_string($current) . '\'');
-    $this->display->printBookList($booklist, 'books', $path[1]);
-    echo getEditForm($realbook, $url);
+    //$this->display->printAuthorList($list, $type, $current);
+    //$booklist = ($type == 'tag')? $db->getTaggedBooks($current) : $db->getBookList('added desc', 'where author = \'' . SQLite3::escapeString($current) . '\'');
+    //$this->display->printBookList($booklist, 'books', $path[1]);
+    echo $this->display->getEditForm($realbook, $url);
     $this->display->printFoot();
     exit;
   }
-  
+
   public function handleread($db, $path) {
     $book = $db->getBook($path[1]);
     $realbook = new ebook($book->file);
@@ -177,7 +186,7 @@ class Dispatcher {
     echo $realbook->getChapter($path[2]);
     exit;
   }
-  
+
   public function handledelete($db, $path) {
     $book = $db->getBook($path[1]);
     $db->deleteBook($book);
@@ -189,12 +198,12 @@ class Dispatcher {
     list($name, $suffix) = explode('.', $file);
     return $suffix;
   }
-  
+
   public function listdir_by_date($path, $db, $limit = false){
     return $db->getBooklist('added desc', null, $limit);
   }
   public function listdir_by_author($path, $db){
-    return $db->getAuthorlist('sortauthor asc');
+    return $db->getBooklist('sortauthor asc');
   }
   public function listdir_by_name($path, $db){
     return $db->getBooklist('title asc');
@@ -206,6 +215,6 @@ class Dispatcher {
       return "http";
     }
   }
-  
+
 
 }

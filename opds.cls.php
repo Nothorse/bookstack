@@ -1,27 +1,27 @@
 <?php
 require('uuid.cls.php');
 class opdsdisplay {
-  
+
   private $dom;// DomDocument();
-  
+
   private $feed;
-  
+
   const ATOM = 'http://www.w3.org/2005/Atom';
-  
+
   const BOOKLIST = 'application/atom+xml;profile=opds-catalog;kind=acquisition';
-  
+
   const CATLIST = "application/atom+xml;profile=opds-catalog;kind=navigation";
-  
+
   const BOOK = 'application/epub+zip';
-  
+
   const RELSUBLIST = 'subsection';
-  
+
   const RELDOWNLOAD = 'http://opds-spec.org/acquisition/open-access';
-  
-  
-  
+
+
+
   private $selfurl;
-  
+
   public function __construct() {
     $this->selfurl = 'http://'.$_SERVER["SERVER_NAME"] . ':' . $_SERVER["SERVER_PORT"] . $_SERVER['SCRIPT_NAME'];
     $this->dom = new DOMDocument('1.0', 'utf-8');
@@ -29,11 +29,10 @@ class opdsdisplay {
     $this->feed->appendChild($this->dom->createElementNS(self::ATOM, 'title', 'Giles Library'));
     $this->feed->appendChild($this->dom->createElementNS(self::ATOM, 'subtitle', 'Local Library served by Giles'));
     $this->feed->appendChild($this->dom->createElementNS(self::ATOM, 'updated', date('c')));
-    $this->feed->appendChild($this->dom->createElementNS(self::ATOM, 'icon', '/favicon.ico')); 
+    $this->feed->appendChild($this->dom->createElementNS(self::ATOM, 'icon', '/favicon.ico'));
     $author = $this->dom->createElementNS(self::ATOM, 'author');
     $author->appendChild($this->dom->createElementNS(self::ATOM, 'name', 'Giles Library'));
     $author->appendChild($this->dom->createElementNS(self::ATOM, 'uri', 'http://hacks.grendel.at'));
-    $author->appendChild($this->dom->createElementNS(self::ATOM, 'name', 'giles@grendel.at'));
     $this->feed->appendChild($author);
     $this->feed->appendChild($this->dom->createElementNS(self::ATOM, 'id', 'urn:uuid:60a76c80-d399-12d9-b91C-0883939e0af6'));
     $this->feed->appendChild($this->createlink('self', $this->selfurl, self::CATLIST));
@@ -77,10 +76,8 @@ class opdsdisplay {
     //$dom = $this->prettyprint($this->dom);
     print $this->dom->saveXML();
   }
-  
-  public function printBookList($list, $divid = 'list', $curid = null) {
-        error_log("booklist: ". print_r($list, true));
 
+  public function printBookList($list, $divid = 'list', $curid = null) {
     foreach ($list as $id => $book) {
       $entry = $this->dom->createElementNS(self::ATOM, 'entry');
       $entry->appendChild($this->dom->createElementNS(self::ATOM, 'title', $book->title));
@@ -107,7 +104,7 @@ class opdsdisplay {
     //$dom = $this->prettyprint($this->dom);
     print $this->dom->saveXML();
   }
-  
+
   public function printAuthorList($list, $what, $current= null) {
     if($current) return;
     foreach ($list as $id => $author) {
@@ -135,7 +132,7 @@ class opdsdisplay {
     //$dom = $this->prettyprint($this->dom);
     print $this->dom->saveXML();
   }
-  
+
   public function getFormattedList($type = 'author') {
     $db = new library();
     $list = $db->getAuthorList();
@@ -146,7 +143,7 @@ class opdsdisplay {
     $formattedlist .= '</ul>';
     return $formattedlist;
   }
-  
+
   public function listTags() {
     $db = new library();
     $list = $db->getTagList(false);
@@ -156,16 +153,16 @@ class opdsdisplay {
     }
     return "<ul>$taglist</ul>";
   }
-  
+
   public function printHeader() {
     header('Content-type: application/xml');
   }
-  
+
   public function buildPage() {
-  
-  
+
+
   }
-  
+
   public function showDetails($book, $protocol = 'http') {
     $geturl = "$protocol://".SERVER.BASEURL."/get/".$book->id.'/'.$book->title;
     $editurl = "http://".SERVER.BASEURL."/edit/".$book->id.'/'.$book->title;
@@ -177,12 +174,13 @@ class opdsdisplay {
       <h1>$book->title</h1>
       <h2>$book->author</h2>
       <p>$book->summary</p>
+      <p>$book->taglist()</p>
       <p><a href="$geturl">Download</a> | <a href="$editurl">Edit Metadata</a> | <a href="$deleteurl">Delete Book</a></p>
     </div>
 EOT;
     return $details;
   }
-  
+
   public function getEditform($book, $url) {
     $tags = implode(', ', $book->tags);
     $form = <<<EOT
@@ -192,10 +190,12 @@ EOT;
   #edit {
     border: 2px #000 solid;
     padding: 3px;
+    width: 95%;
+    margin: 45px auto 0 auto;
   }
-  
+
   form {
-    width: 800px;
+    width: 90%;
     position: relative;
   }
   label {
@@ -204,12 +204,12 @@ EOT;
     display: block;
     line-height: 25px;
     margin: 0 0 5px 0;
-    width: 800px;
+    width: 90%;
     position:relative;
   }
-  
+
   input, textarea {
-    width: 700px;
+    width: 80%;
     height: 25px;
     font-size: 16px;
     border: none;
@@ -217,7 +217,7 @@ EOT;
     position: relative;
     display: block;
   }
-  
+
   textarea {
     height: 150px;
     line-height: 25px;
@@ -228,19 +228,20 @@ EOT;
       <label>Title: <input type="text" name="title" value="$book->title"></label>
       <label>Author: <input type="text" name="author" value="$book->author"></label>
       <label>Tags: <textarea name="tags">$tags</textarea></label>
-      <label>Summary: <textarea name="summary">$book->summary</textarea>
+      <label>Summary: <textarea name="summary">$book->summary</textarea></label>
       <button type="submit" id="submit" value="Update Book">Update Book</button>
+      <a href="#" onclick="history.back()">Cancel Edit</a>
     </form>
   </div>
 EOT;
   return $form;
   }
-  
+
   public function printFoot() {
 //     print '</feed>';
    }
-   
-   
+
+
   /**
    * prettyprint -- get rid of superfluous namespace declarations
    * @param  DOMDocument $dom
@@ -250,8 +251,8 @@ EOT;
     $dom->normalize();
     $dom->preserveWhiteSpace = false;
     $dom->formatOutput = true;
-    $outXML = $dom->saveXML(); 
-    $dom->loadXML($outXML, LIBXML_NSCLEAN); 
+    $outXML = $dom->saveXML();
+    $dom->loadXML($outXML, LIBXML_NSCLEAN);
     return $dom;
   }
 
@@ -263,4 +264,4 @@ EOT;
     return $link;
   }
 
-}  
+}

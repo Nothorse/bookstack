@@ -16,11 +16,15 @@ border: none;
  background-color: #666;
  width: 250px;
  height: 100%;
- left: -5px;
+ left: -245px;
  border: 2px #ccc solid;
  border-bottom-right-radius: 15px;
  padding: 10px;
  overflow: auto;
+}
+
+.toc:hover {
+  left: -5px;
 }
 
 .toc a{

@@ -5,5 +5,5 @@ define('SHELL', false);
 require_once('dispatcher.php');
 
 $index = new Dispatcher(PORT == ODPS);
-$path = explode('/', trim($_SERVER['PATH_INFO'], '/'));
+$path = (isset($_SERVER['PATH_INFO'])) ? explode('/', trim($_SERVER['PATH_INFO'], '/')) : array('');
 $index->handleRequest($path);
