@@ -22,8 +22,8 @@ class AddBook extends CommandLine {
    */
   protected function initParams() {
     $this->setCommand('addbook');
-    $this->addParam('-f:,--file:', 'FILE', 'Epub File');
-    $this->addParam('-d:,--directory:', 'DIRECTORY', 'If a different basedirectory is desired');
+    $this->addParam(array('-f:','--file:'), 'FILE', 'Epub File');
+    $this->addParam(array('-d:','--directory:'), 'DIRECTORY', 'If a different basedirectory is desired');
   }
 
   /**
@@ -35,23 +35,27 @@ class AddBook extends CommandLine {
   public function main() {
     global $argv;
     $file = $this->getArgument('FILE');
-    if($file) {
+    system("/usr/bin/logger ADDBOOK Given $file");
+    if($file && file_exists($file) && strpos($file, '.epub') > 0) {
+      system("/usr/bin/logger ADDBOOK Trying to add $file");
       $book = new ebook($file);
       $book->file = $book->cleanupFile($file);
-      $growl  = "/usr/local/bin/growlnotify ";
+      $growl  = "/usr/local/bin/terminal-notifier ";
 //       $growl .= " -n 'Giles (Ebooklib)' ";
-      $growl .= "-m '" . $book->title . " by " . $book->author . "'";
-      $growl .= " -t 'Book added'";
+      $growl .= "-message '" . str_ireplace(array("'", '"', ';'), '', $book->title) . " by " . $book->author . "'";
+      $growl .= " -title 'Book added' -open 'http://localhost:8080/index.php/show/" . $book->id ."' -timeout 10";
       system($growl, $out);
-      system('/usr/bin/logger $growl');
+      system("/usr/bin/logger ADDBOOK $growl");
       echo $growl;
       $lib = new library();
       $lib->insertBook($book);
+      return true;
     } else {
       echo "No ebook given.\n";
+      return false;
     }
   }
 
 }
 $s = new AddBook();
-$s->main();
+return $s->main();

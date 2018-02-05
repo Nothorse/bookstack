@@ -21,49 +21,49 @@ abstract class Downloader {
   protected $publisher = array('name' => '', 'url' => '');
   protected $subject = array();
   protected $baseurl;
-  
-  
+
+
   public function main($bookurl) {
     $raw = $this->retrieveBook($bookurl);
     $this->extractMetadata($raw);
     $this->getChapters($this->baseurl);
     $this->buildBook();
   }
-  
+
   abstract public function retrieveBook($url);
-  
-  abstract protected function extractMetadata($data); 
-  
-  protected function getChapters($baseurl); {
+
+  abstract protected function extractMetadata($data);
+
+  protected function getChapters($baseurl) {
     foreach($this->chapters as $name => $url) {
       $dom = new DomDocument();
       $dom->loadHTMLFile($baseurl.$url);
       $chaptext = $this->extractChaptertext($dom);
       $x = new DOMImplementation();
       $document = $x->createDocument(null, 'html',
-          $x->createDocumentType("html", 
-              "-//W3C//DTD XHTML 1.0 Transitional//EN", 
+          $x->createDocumentType("html",
+              "-//W3C//DTD XHTML 1.0 Transitional//EN",
               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"));
       $document->formatOutput = true;
-      
+
       $html = $document->documentElement;
       $head = $document->createElement('head');
       $title = $document->createElement('title');
       $text = $document->createTextNode($this->title . ': ' . $name);
       $body = $document->createElement('body');
-      
+
       $title->appendChild($text);
       $head->appendChild($title);
       $html->appendChild($head);
       $body->appendChild($document->importNode($chaptext, true));
       $html->appendChild($body);
-      
+
       $this->chapters[$name] = $document->saveXML();
     }
   }
 
   abstract protected function extractChaptertext($chapdom);
-  
+
   private function buildBook($storyurl) {
     $book = new EPub();
     $book->setTitle($this->title);

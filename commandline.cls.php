@@ -1,18 +1,21 @@
 <?php
+require __DIR__ . '/lib/vendor/autoload.php';
+use Ulrichsg\Getopt\Getopt;
+use Ulrichsg\Getopt\Option;
 
 /**
  * Complete command line base class.
  * Takes care of parameter setup, --help output
  * and IO.
  * Needs to be subclassed for the specific script.
- * The script also needs two lines outside the class definition 
+ * The script also needs two lines outside the class definition
  * to instantiate the class and call the main method.
  * EXAMPLE:
  *   $script = new MiracleScript();
  *   $script->main();
  *
- * !!: All parameters must be named. 
- * !!: Unrecognized strings after the 
+ * !!: All parameters must be named.
+ * !!: Unrecognized strings after the
  * !!: parameters are discarded.
  *
  * @author    Thomas Hassan <t.hassan@intevo.net>
@@ -23,27 +26,28 @@
 abstract class CommandLine {
 
   /**
-   * Parameters and helptext 
+   * Parameters and helptext
    * ([parameter] => ([varname] => [helptext]))
    *
    * @var array
    */
   private $params;
-  
+  private $structparams;
+
   /**
    * Application::environment
    *
    * @var object
    */
   protected $env;
-  
+
   /**
    * Application::database
    *
    * @var object
    */
   protected $db;
-  
+
   /**
    * commandline arguments
    * ([varname] => [value])
@@ -51,7 +55,7 @@ abstract class CommandLine {
    * @var string
    */
   protected $args;
-  
+
   /**
    * built helpstring
    * usage + \n + param + helptext
@@ -59,7 +63,7 @@ abstract class CommandLine {
    * @var string
    */
   protected $helpstring;
-  
+
   /**
    * custom usage string
    * normally built automagically
@@ -67,14 +71,14 @@ abstract class CommandLine {
    * @var string
    */
   private $usage;
-  
+
   /**
    * Command Name -- set for ease of building usage
    *
    * @var string
    */
   private $cmdname;
-  
+
   /**
    * Constructor
    * sets params, gets the parameters from the commandline,
@@ -82,10 +86,9 @@ abstract class CommandLine {
    *
    */
   public function __construct() {
-    $this->addParam('-q', 'QUIET', "No output. Scripts that demand interactive user input cannot be run this way");
-    $this->addParam('-h,--help', 'HELP', "Display this help");
+    $this->addParam(array('q'), 'QUIET', "No output. Scripts that demand interactive user input cannot be run this way");
+    $this->addParam(array('h','help'), 'HELP', "Display this help");
     $this->initParams();
-    require_once 'Console/Getopt.php';
     $shortopts = '';
     $longopts = array();
     $parlen = 1;
@@ -125,7 +128,7 @@ abstract class CommandLine {
           $this->helpstring .=  $ptext . $htext . "\n";
       }
     }
-    $args = $this->getArgs($shortopts, $longopts);
+    $args = $this->getArgs();
     foreach($this->params as $flag => $param) {
       $flags = array();
       // Remove : and = from flag for help and doc purposes
@@ -148,7 +151,7 @@ abstract class CommandLine {
       exit;
     }
   }
-  
+
   /**
    * Neds to be implemented in subclass to define
    * commandline parameters
@@ -156,7 +159,7 @@ abstract class CommandLine {
    * @return void
    */
   abstract protected function initParams();
-  
+
   /**
    * Needs to be implemented in subclass.
    * Main handler, runs the script.
@@ -164,12 +167,12 @@ abstract class CommandLine {
    * @return void
    */
   abstract public function main();
-  
+
   /**
    * addParam -- Adds the parameter definitions.
    * If a flag expects data, postfix it with ':' short opts and '=' for long opts.
    *
-   * @param  string  $param    commandline parameter, 
+   * @param  string  $param    commandline parameter,
    *                           both long and short options are possible, seperated by comma.
    * @param  string  $varname  name of option in args -- Should be in CAPS by convention.
    * @param  string  $help     helpstring.
@@ -180,24 +183,31 @@ abstract class CommandLine {
     if ($quiet) {
       $help = $quiet;
     }
-    $this->params[$param] = array('varname' => $varname,
+    $argreq = (strpos($param[0], ':') > 1) ? Getopt::REQUIRED_ARGUMENT : Getopt::NO_ARGUMENT;
+    $short = (strlen(trim($param[0],':-')) == 1) ? trim($param[0],':-') : null;
+    $long = (isset($param[1])) ? trim($param[1], ':-') : null;
+    if (!$long) {
+      $long = (strlen(trim($param[0],':-')) > 1) ? trim($param[0],':-') : null;
+    }
+    $this->structparams[] = new Option($short, $long, $argreq);
+    $this->params[implode(',', $param)] = array('varname' => $varname,
                                   'help'    => $help);
   }
-  
+
   /**
    * addUsage -- add a custom usage string.
    * completely optional as the usage is usally generated automatically.
    *
    * @param  string $usage whatever you want to write.
    * @return void
-   */  
+   */
   protected function addUsage($usage) {
     if (substr($usage, -1, 1) != '\n') {
       $usage .= "\n";
     }
     $this->usage = $usage;
   }
-  
+
   /**
    * showHelp -- echoes the built helpstring to stdout.
    *
@@ -206,39 +216,31 @@ abstract class CommandLine {
   protected function showHelp() {
     echo $this->helpstring;
   }
-  
+
   /**
-   * setCommand -- set the commandname. used for the usage string. 
+   * setCommand -- set the commandname. used for the usage string.
    * should be the same as the file name
    *
-   * @param string $name 
+   * @param string $name
    * @return void
    */
   protected function setCommand($name) {
     $this->cmdname = $name;
   }
-  
+
   /**
    * getArgs -- used in the constructor to gather the commandline flags and options.
    * Uses Console_Getopt.
    *
-   * @param  string $shortOpts single-letter flags (e.g. '-r')
-   * @param  mixed $longOpts  multi-letter flags (e.g. '--makeitwork')
-   * @return void
+   * @return array
    */
-  private function getArgs($shortOpts = '', $longOpts = array()) {
-    $cg = new Console_Getopt();
-    $args = $cg->readPHPArgv();
-    array_shift($args);
-    $params = $cg->getopt2($args, $shortOpts, $longOpts);
-    if (PEAR::isError($params)) {
-      echo 'Error: ' . $params->getMessage() . "\n";
-      exit(1);
-    }
-    $cline_args = $this->condenseArguments($params);
-    return $cline_args;
+  private function getArgs() {
+    $getopt = new Getopt($this->structparams);
+    $getopt->parse();
+    $args = $getopt->getOptions();
+    return $args;
   }
-  
+
   /**
    * condenseArgs -- helper function for getArgs()
    *
@@ -251,10 +253,10 @@ abstract class CommandLine {
       $val = ($param[1] == null) ? "1" : $param[1];
       $new_params[$param[0]] = $val;
     }
-    
+
     return $new_params;
   }
-  
+
   /**
    * getArgument -- Accessor for options
    *
@@ -275,7 +277,7 @@ abstract class CommandLine {
   protected function setArgument($name, $data) {
     $this->args[$name] = $data;
   }
-  
+
   /**
    * readInteractive -- utility function to get user input during script execution.
    *

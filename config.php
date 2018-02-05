@@ -13,3 +13,5 @@ if(substr($_SERVER['HTTP_HOST'], strlen($_SERVER['SERVER_PORT'])*-1) == $_SERVER
 #define('SERVER', $_SERVER['HTTP_HOST'].':'.$_SERVER["SERVER_PORT"]);
 define('PORT', $_SERVER["SERVER_PORT"]);
 }
+
+date_default_timezone_set('Europe/Vienna');

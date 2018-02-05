@@ -16,9 +16,8 @@ class ebook {
   public $spine;
   public $lookup;
   public $updated;
-  
+
   public function __construct($epub = null) {
-    error_log("creating a ebook $epub");
     if (file_exists($epub)) {
       $this->file = $epub;
       return $this->get_meta($epub);
@@ -30,7 +29,7 @@ class ebook {
   public function create_id() {
     $this->id = md5('thcatgen'.$this->title.$this->author);
   }
-  
+
   public function get_thumb($sz = 75, $inline = false) {
     if(!file_exists(dirname($this->path)."/thumb-$sz.png")) {
       $img = imagecreatefromjpeg($this->cover);
@@ -49,7 +48,7 @@ class ebook {
       file_get_contents(dirname($this->path)."/thumb-$sz.png");
     }
   }
-  
+
   public function get_cover($inline = false) {
     if(!file_exists(dirname($this->path)."/cover-resized.png")) {
     $img = imagecreatefromjpeg($this->cover);
@@ -67,15 +66,15 @@ class ebook {
     } else {
       file_get_contents(dirname($this->path)."/cover-resized.png");
     }
-  }  
+  }
   /**
    * get Metadata of epub
    * @param  string $epub File reference
    * @return ebook        ebook with metadata filled in
    */
   public function get_meta($epub) {
-    error_log("test??");
     $zip = new ZipArchive;
+
     if ($zip->open($epub)===TRUE){
       $container = simplexml_load_string($zip->getFromName(ebook::CONTAINER));
 //       $rootfile = $container->rootfiles->rootfile['full-path'];
@@ -89,6 +88,8 @@ class ebook {
       $this->author  = (string) $meta->creator[0];
       $this->sortauthor = strtolower($this->author);
       $this->tags = (array) $meta['subject'];
+      $this->oldtaglist =  (array) $meta['subject'];
+      $this->oldtaglist[] = 'gethere';
       $this->summary = (string) $meta->description[0];
       if ($this->summary == '') {
         $this->summary = "No summary for this book yet.";
@@ -97,6 +98,7 @@ class ebook {
       //$this->cover = $this->is_cover($zip, $epub);
       $this->create_id();
       // test with DOM
+
       $dom = new DomDocument();
       $dom->loadXML($zip->getFromName($rootfile));
       $meta = $dom->getElementsByTagName('metadata')->item(0);
@@ -104,6 +106,7 @@ class ebook {
       $this->author = $meta->getElementsByTagName('creator')->item(0)->nodeValue;
       $this->summary = $meta->getElementsByTagName('description')->item(0)->nodeValue;
       $taglist = $dom->getElementsByTagName('subject');
+      //print_r($taglist);
       foreach($taglist as $id => $tagnode) {
         $this->tags[$id] = $tagnode->nodeValue;
       }
@@ -133,29 +136,28 @@ class ebook {
         $this->toc[$label] = $src;
       }
       $zip->close();
-      error_log("Metadata read: " . print_r($this, true));
       return $this;
     }else{
       error_log('Opening Book zip failed');
       return 'failed';
     }
   }
-  
+
   public function prettyprint($dom) {
       $dom->normalize();
       $dom->preserveWhiteSpace = false;
       $dom->formatOutput = true;
-      $outXML = $dom->saveXML(); 
-      $dom->loadXML($outXML, LIBXML_NSCLEAN); 
+      $outXML = $dom->saveXML();
+      $dom->loadXML($outXML, LIBXML_NSCLEAN);
       return $dom;
   }
-  
+
   public function get_metafile($zip) {
       $container = simplexml_load_string($zip->getFromName(ebook::CONTAINER));
       $rootfile = $container->rootfiles->rootfile['full-path'];
       return $rootfile;
   }
-  
+
   public function is_cover($zip, $epub) {
     // check for a cover in the Directory
     if (file_exists(dirname($epub).'/cover.jpg')) {
@@ -172,7 +174,7 @@ class ebook {
     }
     return 'defaultcover.jpg';
   }
-  
+
   public function cleanupFile($epub = null, $bookdir = "/Users/thomas/Books") {
     if(!$epub) {
       $epub = $this->file;
@@ -180,13 +182,15 @@ class ebook {
     $canonicaldir = $bookdir . '/' . $this->sanitize($this->author) .'/' . $this->sanitize($this->title);
     $canonicalname = $canonicaldir . '/' . basename($epub);
     if (dirname($epub) != $canonicaldir) {
-      mkdir($canonicaldir, 0755, true);
+      if (!file_exists($canonicaldir)) {
+        mkdir($canonicaldir, 0755, true);
+      }
       rename($epub, $canonicalname);
       return $canonicalname;
     }
     return $epub;
   }
-  
+
   public function getChapter($idref) {
     foreach($this->manifest as $id => $href) {
       if ($id == $idref) {
@@ -204,22 +208,22 @@ class ebook {
       return $this->injectNavigation($html, $chapter);
     }
   }
-  
+
   public function injectNavigation($html, $chapter) {
     $tochead = $this->getFormattedToc() . $this->getNextPrev($chapter);
     $html = str_replace('<body>', $tochead, $html);
     $html = str_replace('</body>', $this->getNextPrev($chapter), $html);
-    return $html;  
+    return $html;
   }
-  
+
   public function injectStyle($html) {
     return str_replace('</head>', '<link rel="stylesheet" href="/read.css" type="text/css" media="all" /></head>', $html);
   }
-  
+
   public function injectBooktitle($html) {
     return str_replace('<title>', '<title>'.$this->title.' - ', $html);
   }
-  
+
   public function getFormattedToc($baseurl = '/index.php') {
     $ret = "<ul class='toc'>\n";
     foreach($this->toc as $chaptername => $href) {
@@ -228,7 +232,7 @@ class ebook {
     $ret .= "</ul>";
     return $ret;
   }
-  
+
   public function getNextPrev($currenthref, $baseurl = '/index.php') {
     $current = null;
     $prev = null;
@@ -257,8 +261,8 @@ class ebook {
     }
     return '<div class="nextprev">'.implode(' | ', $link) . '</div>';
   }
-  
-  
+
+
   public function modify_meta() {
     $zip = new ZipArchive;
     if ($zip->open($this->file) === TRUE) {
@@ -277,7 +281,7 @@ class ebook {
       foreach($this->tags as $id => $tag) {
         $meta->appendChild($this->allmeta->createElementNS('http://purl.org/dc/elements/1.1/', 'dc:subject', trim($tag)));
       }
-      
+
       $newContents = $this->prettyprint($this->allmeta)->saveXML();
       //Delete the old...
       $zip->deleteName($fileToModify);
@@ -290,16 +294,16 @@ class ebook {
       return 'failed';
     }
   }
-  
+
   public function sanitize($string) {
     return $string;
       //return ereg_replace('[^A-Za-z0-9- ]', '', $string);
   }
-  
+
   public function edit_book($key, $val) {
-    
+
   }
-  
+
   public function trunc_summary($char) {
     $ct = strlen($this->summary);
     if ($ct>$char) {
@@ -307,9 +311,15 @@ class ebook {
     }
     return $this->summary;
   }
-  
+
+  public function taglist() {
+    if (count($this->tags) > 0) {
+      return implode(', ', $this->tags);
+    }
+  }
+
   public function __toString() {
     return basename($this->file);
   }
-  
+
 }

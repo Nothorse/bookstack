@@ -16,20 +16,18 @@ if ($_GET['url']) {
 }
 
 function ficdl($url) {
-  $urlparts = explode('-', $_POST['url']);
-  $u = $urlparts[1];
   $curlstr = __DIR__."/lib/ficdl $url epub";
   echo "Downloading ".$_GET['title']."\n";
   echo "<pre>";
-  echo system("$curlstr");
+  system("$curlstr  2>&1");
   echo "</pre>";
   echo '<p><a href="http://th-netzhaut.local:8080/">booklist</a></p>';
 }
 
 function mcdl($url) {
-  //echo "$url";
+  echo "$url";
   include_once(__DIR__."/sites/mcstories.php");
-  $d = new Downloader();
+  $d = new McStories();
   $d->retrieveBook($url);
   echo '<p><a href="http://th-netzhaut.local:8080/">booklist</a></p>';
 }
