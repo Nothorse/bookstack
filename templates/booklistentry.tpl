@@ -8,7 +8,8 @@
     <span class="dl-link">
         <a href="%%finder%%">iBooks</a>
     </span>
-    <a class="titlelink" href="%%show%%">%%title%% <span class="byline">%%author%%</span>
+    <span class="detailtoggle" onclick="toggleExpand(this)">🔽</span>
+    <a class="titlelink%%complete%%" href="%%show%%">%%title%% <span class="byline">%%author%%</span>
     </a>
     <div class="summary" style="display: none;">
         %%summary%%<br>%%tags%%

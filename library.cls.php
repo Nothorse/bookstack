@@ -7,7 +7,7 @@ class library{
 
   public function __construct($db = null) {
     if (!$db) {
-      $db = '/Users/'.USER.'/Library/Preferences/at.grendel.ebooklib.library.sqlite';
+      $db = BASEDIR . '/.library.db';
     }
     $this->db = $this->getdb($db);
     $this->checkTables();
@@ -85,7 +85,9 @@ class library{
     $row = $res->fetcharray();
     $bookid = $row['id'];
     $this->db->exec("DELETE FROM taggedbooks WHERE bookid = '$bookid'");
+    if (empty($ebook->tags)) $ebook->tags[] = 'untagged';
     foreach($ebook->tags as $id => $tag) {
+      $tag = SQLite3::escapeString($tag);
       $qry = "select id from tags where tag = '$tag'";
       $tagid = $this->db->querySingle($qry);
       if (!$tagid) {
@@ -96,6 +98,9 @@ class library{
     }
   }
 
+  /**
+   * @param Ebook $ebook
+   */
   public function updateBook($ebook) {
     $qry = "update books
               SET  title = '".SQLite3::escapeString($ebook->title)."',
@@ -144,9 +149,11 @@ class library{
     $booklist = array();
     $limstr = ($limit) ? " LIMIT 30": '';
     $qry = "select title, author, sortauthor, file, summary, md5id, added, " .
-      "group_concat(tag) as tags from books " .
-      "join taggedbooks on books.id = bookid " .
-      " join tags on tagid = tags.id $lwhere " .
+      "group_concat(tag) " .
+      "as tags from books" .
+      " join taggedbooks on books.id = bookid " .
+      " join tags on tagid = tags.id " .
+      " $lwhere " .
       " group by books.id" .
       " order by $order $limstr";
     $res = $this->db->query($qry);
@@ -160,7 +167,7 @@ class library{
         $book->id = $row['md5id'];
         $book->updated = $row['added'];
         $book->tags = explode (',', $row['tags']);
-        $booklist[$book->sortauthor.$book->title] = $book;
+        $booklist[$book->id] = $book;
     }
     return $booklist;
   }
@@ -215,8 +222,37 @@ class library{
     $bookid = $this->db->querySingle('select id from books where md5id =\''.$book->id."'");
     $this->db->exec("delete from books where id = '$bookid'");
     $this->db->exec("delete from taggedbooks where bookid = '$bookid'");
-    rename(dirname($book->file), "/Users/".USER."/.Trash/".basename(dirname($book->file)));
+    rename(dirname($book->file), TRASH .basename(dirname($book->file)));
+  }
+
+  public function fixTags() {
+    $untagged = "select id from tags where tag = 'untagged'";
+    $tagexists = $this->db->querySingle($untagged);
+    if (empty($tagexists)) {
+      $this->db->exec("insert into tags ('tag') values ('untagged')");
+      $tagexists = $this->db->querySingle($untagged);
+    }
+    $untaggedquery = "select id, title from books where id not in (select bookid from taggedbooks)";
+    $untaggedlist = $this->db->query($untaggedquery);
+    while ($row = $untaggedlist->fetchArray()) {
+      echo $row['id'] . ': ' . $row['title'] . "<br>\n";
+      $bookid = $row['id'];
+      $sql = "insert into taggedbooks (bookid, tagid) values ($bookid, $tagexists)";
+      $this->db->exec($sql);
+    }
+    $this->db->exec("update books set summary = 'No summary' where summary = ''");
+  }
+
+  public function getBookIdByPath($path) {
+    $path = SQLite3::escapeString($path);
+    $qry = "select id from books where file = '$path'";
+    $bookid = $this->db->querySingle($qry);
+    if (empty($bookid)) {
+      return false;
+    } else {
+      return $bookid;
+    }
   }
 
 }
-?>
+
