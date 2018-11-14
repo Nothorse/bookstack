@@ -104,9 +104,17 @@ class ebook {
       $meta = $dom->getElementsByTagName('metadata')->item(0);
       $this->title = $meta->getElementsByTagName('title')->item(0)->nodeValue;
       $this->author = $meta->getElementsByTagName('creator')->item(0)->nodeValue;
-      $this->summary = $meta->getElementsByTagName('description')->item(0)->nodeValue;
+      $summary = $meta->getElementsByTagName('description')->item(0);
+      if ($summary) {
+        $this->summary = $summary->nodeValue;
+      } else {
+        $this->summary = 'no summary';
+      }
       $taglist = $dom->getElementsByTagName('subject');
       //print_r($taglist);
+      if (empty($taglist)) {
+        $this->tags[] = 'untagged';
+      }
       foreach($taglist as $id => $tagnode) {
         $this->tags[$id] = $tagnode->nodeValue;
       }
@@ -175,7 +183,7 @@ class ebook {
     return 'defaultcover.jpg';
   }
 
-  public function cleanupFile($epub = null, $bookdir = "/Users/thomas/Books") {
+  public function cleanupFile($epub = null, $bookdir = BASEDIR) {
     if(!$epub) {
       $epub = $this->file;
     }
@@ -212,12 +220,12 @@ class ebook {
   public function injectNavigation($html, $chapter) {
     $tochead = $this->getFormattedToc() . $this->getNextPrev($chapter);
     $html = str_replace('<body>', $tochead, $html);
-    $html = str_replace('</body>', $this->getNextPrev($chapter), $html);
+    $html = str_replace('</body>', '</body>' .$this->getNextPrev($chapter), $html);
     return $html;
   }
 
   public function injectStyle($html) {
-    return str_replace('</head>', '<link rel="stylesheet" href="/read.css" type="text/css" media="all" /></head>', $html);
+    return str_replace('</head>', '<link rel="stylesheet" href="/ui.css" type="text/css" media="all" /></head>', $html);
   }
 
   public function injectBooktitle($html) {
@@ -225,7 +233,7 @@ class ebook {
   }
 
   public function getFormattedToc($baseurl = '/index.php') {
-    $ret = "<ul class='toc'>\n";
+    $ret = "<body class='read'><ul class='toc'>\n";
     foreach($this->toc as $chaptername => $href) {
       $ret .= "<li><a href='$baseurl/read/".$this->id."/".$this->lookup[$href]."'>$chaptername</a></li>";
     }
@@ -273,6 +281,12 @@ class ebook {
       $meta = $this->allmeta->getElementsByTagName('metadata')->item(0);
       $meta->getElementsByTagName('creator')->item(0)->nodeValue = $this->author;
       $meta->getElementsByTagName('title')->item(0)->nodeValue =  $this->title;
+      $summary = $meta->getElementsByTagName('description')->item(0);
+      if (!$summary) {
+        $meta->appendChild($this->allmeta->createElementNS('http://purl.org/dc/elements/1.1/', 'dc:description', $this->summary));
+      } else {
+        $summary->nodeValue =  $this->summary;
+      }
       //tags
       $taglist = $meta->getElementsByTagName('subject');
       while($taglist->length > 0) {
@@ -289,7 +303,7 @@ class ebook {
       $zip->addFromString($fileToModify, $newContents);
       //And write back to the filesystem.
       $zip->close();
-      return 'ok';
+      return "ok: $newContents";
     } else {
       return 'failed';
     }

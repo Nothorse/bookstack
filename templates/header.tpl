@@ -3,14 +3,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <meta name='viewport' content='width=620,user-scalable=true' />	<title>TH's Library Devel</title>
+    <title>TH's Library Devel</title>
     <script src="/jquery.js" type="text/javascript" language="javascript" charset="utf-8"></script>
     <script>
         function reload() {
             window.location = '%%self%%';
-            //location.reload(true);
+            window.location.reload(true);
         }
-        function myFunction() {
+        function filterList() {
             var input, filter, div, ul, li, a, i;
             input = document.getElementById("myInput");
             filter = input.value.toUpperCase();
@@ -33,14 +33,22 @@
                 }
             }
         }
+        function toggleExpand(element) {
+            var el = $(element).nextUntil(2)[1];
+            if (el.style.display == 'none') {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
     </script>
     <link rel="stylesheet" href="/ui.css" type="text/css" media="all">
 </head>
-<body style='padding:0;margin:0;'>
+<body style='padding:0;margin:0;' class="normal">
 <div id="bluebar">
     <div class="reloadbtn"><span onclick="reload()">🔁</span></div>
     <input type="search" id="myInput" results=5
-           autosave='filtersearch' onkeyup="myFunction()" onmouseup="myFunction()"
+           autosave='filtersearch' onkeyup="filterList()" onblur="filterList()" onmouseup="filterList()"
            placeholder="filter" />
     <ul>
         <li class="category">

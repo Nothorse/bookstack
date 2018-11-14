@@ -13,28 +13,17 @@ class browserdisplay {
           'delete' => "http://".SERVER.BASEURL."/delete/".$book->id.'/'.$book->title,
           'author' => $book->author,
           'tags' => $book->taglist(),
-          'summary' => $book->trunc_summary(180),
+          'summary' => $book->trunc_summary(250),
           'finder' => "ebooklib://at.grendel.ebooklib?" . $book->file,
           'show' => $this->getproto()."://".SERVER.BASEURL."/show/".$book->id."/".$book->title,
           'download' => $this->getproto()."://".SERVER.BASEURL."/get/".$book->id.'/'.$book->title . '.epub',
         );
+        $data['complete'] = (strpos($data['tags'], 'In-Progress') === false) ?
+          ' complete' : '';
         echo $template->render($data);
       }
     }
     echo "<ul></div>";
-  }
-
-  public function printAuthorList($list, $what, $current= null) {
-    echo "<div id='list'><ul>";
-    foreach($list as $id => $author) {
-      $class='';
-      if($current == $id) {
-        $class = " class='current'";
-      }
-      echo "<li$class><a href=\"http://".SERVER.BASEURL."/$what/".$author['name']."/\">".$id."</a></li>\n";
-    }
-    echo "<ul></div>";
-
   }
 
   public function getFormattedList($type = 'author') {
@@ -61,7 +50,7 @@ class browserdisplay {
   public function printHeader() {
     $data = array();
     $data['self'] = 'http://'.SERVER.BASEURL;
-    $data[taglist] = $this->listTags();
+    $data['taglist'] = $this->listTags();
     $head = new Template('header');
     echo $head->render($data);
   }
@@ -91,6 +80,8 @@ class browserdisplay {
     $data['summary'] = $book->summary;
     $data['tags'] = $book->taglist();
     $data['author'] = $book->author;
+    $data['complete'] = (strpos($data['tags'], 'In-Progress') === false) ?
+      ' complete' : '';
     $details = new Template('bookdetails');
     return $details->render($data);
   }
@@ -98,58 +89,12 @@ class browserdisplay {
   public function getEditform($book, $url) {
     $tags = implode(', ', $book->tags);
     $backurl = str_replace('edit', 'show', $url);
-    $form = <<<EOT
-  <div id="edit">
-  <style type="text/css" title="text/css">
-  <!--
-  #edit {
-    border: 2px #000 solid;
-    padding: 3px;
-    width: 95%;
-    margin: 0 auto;
-  }
-
-  form {
-    width: 90%;
-    position: relative;
-  }
-  label {
-    font-size: 16px;
-    font-weight: bold;
-    display: block;
-    line-height: 25px;
-    margin: 0 0 5px 0;
-    width: 90%;
-    position:relative;
-  }
-
-  input, textarea {
-    width: 80%;
-    height: 25px;
-    font-size: 16px;
-    border: none;
-    left:20px;
-    position: relative;
-    display: block;
-  }
-
-  textarea {
-    height: 150px;
-    line-height: 25px;
-  }
-  -->
-  </style>
-    <form action="$url" method="post">
-      <label>Title: <input type="text" name="title" value="$book->title"></label>
-      <label>Author: <input type="text" name="author" value="$book->author"></label>
-      <label>Tags: <textarea name="tags">$tags</textarea></label>
-      <label>Summary: <textarea name="summary">$book->summary</textarea></label>
-      <button type="submit" id="submit" value="Update Book">Update Book</button>
-      <a href="$backurl">Cancel Edit</a>
-    </form>
-  </div>
-EOT;
-  return $form;
+    $form = new Template('editform');
+    $data['title'] = $book->title;
+    $data['summary'] = $book->summary;
+    $data['tags'] = $book->taglist();
+    $data['author'] = $book->author;
+    return $form->render($data);
   }
 
   public function printFoot() {
@@ -166,5 +111,9 @@ EOT;
   </html>
 EOT;
     echo $foot;
+   }
+
+   public function debug($msg) {
+    echo $msg;
    }
 }

@@ -28,15 +28,6 @@ class Dispatcher {
   }
 
   public function handle($db, $path) {
-/**
-    $items = $this->listdir_by_date($path, $db);
-    foreach ($items as $id => $item) {
-      $book = new ebook($path.$item);
-      $authors[$book->sortauthor][$book->id] = $book;
-      $allbooks[$book->id]         = $book;
-    }
-
-**/
     setcookie('booksel', '');
     setcookie('selval', '');
     header("X-Clacks-Overhead: GNU Terry Pratchett");
@@ -50,13 +41,6 @@ class Dispatcher {
       case 'author':
         $list = $this->listdir_by_author($path, $db);
         $this->display->printBookList($list, 'bookswide');
-
-//        $this->display->printAuthorList($list, 'author');
-/**
-        $books = $db->getBooklist('title asc');
-        $this->display->printBookList($books, 'books');
-
-**/
         break;
       case 'date':
         $list = $this->listdir_by_date($path, $db);
@@ -67,14 +51,14 @@ class Dispatcher {
         $this->display->printAuthorList($list, 'tag');
         break;
       case 'recent':
-        $list = $this->listdir_by_date($path, $db, true);
+        $list = $this->listdir_by_date($path, $db, false);
         $this->display->printBookList($list, 'bookswide');
         break;
       default:
         if (ODPS == PORT) {
           $this->display->printNavigation();
         } else {
-          $list = $this->listdir_by_date($path, $db, 1);
+          $list = $this->listdir_by_date($path, $db, false);
           $this->display->printBookList($list, 'bookswide');
         }
     }
@@ -86,6 +70,11 @@ class Dispatcher {
     header("Content-Type: application/epub");
     echo file_get_contents($book->file);
     exit;
+  }
+
+  public function handlefixtags() {
+      $res = $this->db->fixTags();
+      $this->display->debug($res);
   }
 
   public function handleauthor($db, $path) {
@@ -152,29 +141,31 @@ class Dispatcher {
     $realbook = new ebook($book->file);
     $realbook->id = $path[1];
     $url = $_SERVER['PHP_SELF'];
-    $realbook->title = (isset($_POST['title'])) ? $_POST['title']:$realbook->title;
-    $realbook->author = (isset($_POST['author'])) ? $_POST['author']:$realbook->author;
-    $realbook->sortauthor = (isset($_POST['author'])) ? strtolower($_POST['author']):$realbook->sortauthor;
-    if (isset($_POST['tags'])) {
-      $tags = explode(',', $_POST['tags']);
-      $realbook->tags = array();
-      foreach($tags as $tag) {
-        $realbook->tags[] = trim($tag);
+    $this->display->printHeader();
+    if (isset($_POST['editactive'])) {
+      $realbook->title = (isset($_POST['title'])) ? $_POST['title']:$realbook->title;
+      $realbook->author = (isset($_POST['author'])) ? $_POST['author']:$realbook->author;
+      $realbook->sortauthor = (isset($_POST['author'])) ? strtolower($_POST['author']):$realbook->sortauthor;
+      if (isset($_POST['tags'])) {
+        $tags = explode(',', $_POST['tags']);
+        $realbook->tags = array();
+        foreach($tags as $tag) {
+          $realbook->tags[] = trim($tag);
+        }
       }
+      $realbook->summary = (isset($_POST['summary'])) ? $_POST['summary']:$realbook->summary;
+      $db->updateBook($realbook);
+      $res = $realbook->modify_meta();
+      setcookie('editresult', $res);
+    } else {
+      setcookie('editresult', '');
     }
-    $realbook->summary = (isset($_POST['summary'])) ? $_POST['summary']:$realbook->summary;
-    $realbook->modify_meta();
-    $db->updateBook($realbook);
     $type = $_COOKIE['booksel'];
     $current = $_COOKIE['selval'];
     setcookie('booksel', '');
     setcookie('selval', '');
-    $list = ($type == 'tag') ? $db->getTagList() : $db->getAuthorlist();
-    $this->display->printHeader();
-    //$this->display->printAuthorList($list, $type, $current);
-    //$booklist = ($type == 'tag')? $db->getTaggedBooks($current) : $db->getBookList('added desc', 'where author = \'' . SQLite3::escapeString($current) . '\'');
-    //$this->display->printBookList($booklist, 'books', $path[1]);
-    echo $this->display->getEditForm($realbook, $url);
+    echo (isset($_POST['editactive'])) ? $this->display->showDetails($realbook) :
+      $this->display->getEditForm($realbook, $url);
     $this->display->printFoot();
     exit;
   }

@@ -3,7 +3,7 @@ require_once('config.php');
 require_once('ebook.cls.php');
 require_once('library.cls.php');
 
-class EbookLib() {
+class EbookLib {
   
   private $request = 'list';
   
@@ -11,7 +11,12 @@ class EbookLib() {
   
   private $requestParam;
 
-  private $db = new library();
+  private $db;
+
+  public function __construct() {
+    $this->db = new library();
+  }
+
 
   public function parsePath() {
     $path = explode('/', trim($_SERVER['PATH_INFO'], '/'));
@@ -47,9 +52,7 @@ class EbookLib() {
   private function handleAUTHOR() {}
   
   private function handleTAG() {}
-  
-  private function handleREAD() {}
-  
+
   private function handleDELETE() {} 
   
   
