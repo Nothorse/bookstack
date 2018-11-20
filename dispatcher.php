@@ -64,17 +64,21 @@ class Dispatcher {
     }
   }
 
+  /**
+   * @param library $db
+   * @param string $path
+   */
   public function handleget($db, $path) {
     $book = $db->getBook($path[1]);
     #print_r($book);
     header("Content-Type: application/epub");
-    echo file_get_contents($book->file);
+    echo file_get_contents($book->getFullFilePath());
     exit;
   }
 
   public function handlefixtags() {
-      $res = $this->db->fixTags();
-      $this->display->debug($res);
+      $this->db->fixTags();
+      $this->display->debug('fix tags');
   }
 
   public function handleauthor($db, $path) {
@@ -111,11 +115,15 @@ class Dispatcher {
     exit;
   }
 
+  /**
+   * @param library $db
+   * @param $path
+   */
   public function handleshow($db, $path) {
     $book = $db->getBook($path[1]);
     if($this->getproto() == 'epub') {
       header("Content-Type: application/epub");
-      echo file_get_contents($book->file);
+      echo file_get_contents($book->getFullFilePath());
       exit;
     }
     $type = (isset($_COOKIE['booksel']))? $_COOKIE['booksel'] : 'author';
@@ -127,7 +135,8 @@ class Dispatcher {
     //$this->display->printAuthorList($list, $type, $current);
     $booklist = ($type == 'tag')? $db->getTaggedBooks($current) : $db->getBookList('added desc', 'where author = \'' . SQLite3::escapeString($current) . '\'');
     //$this->display->printBookList($booklist, 'books', $path[1]);
-    echo $this->display->showDetails(new ebook($book->file));
+    $book->get_meta();
+    echo $this->display->showDetails($book);//new ebook($book->file));
     $this->display->printFoot();
     exit;
   }
@@ -138,24 +147,24 @@ class Dispatcher {
      */
     public function handleedit($db, $path) {
     $book = $db->getBook($path[1]);
-    $realbook = new ebook($book->file);
-    $realbook->id = $path[1];
+    $book->get_meta();
+    $book->id = $path[1];
     $url = $_SERVER['PHP_SELF'];
     $this->display->printHeader();
     if (isset($_POST['editactive'])) {
-      $realbook->title = (isset($_POST['title'])) ? $_POST['title']:$realbook->title;
-      $realbook->author = (isset($_POST['author'])) ? $_POST['author']:$realbook->author;
-      $realbook->sortauthor = (isset($_POST['author'])) ? strtolower($_POST['author']):$realbook->sortauthor;
+      $book->title = (isset($_POST['title'])) ? $_POST['title']:$book->title;
+      $book->author = (isset($_POST['author'])) ? $_POST['author']:$book->author;
+      $book->sortauthor = (isset($_POST['author'])) ? strtolower($_POST['author']):$book->sortauthor;
       if (isset($_POST['tags'])) {
         $tags = explode(',', $_POST['tags']);
-        $realbook->tags = array();
+        $book->tags = array();
         foreach($tags as $tag) {
-          $realbook->tags[] = trim($tag);
+          $book->tags[] = trim($tag);
         }
       }
-      $realbook->summary = (isset($_POST['summary'])) ? $_POST['summary']:$realbook->summary;
-      $db->updateBook($realbook);
-      $res = $realbook->modify_meta();
+      $book->summary = (isset($_POST['summary'])) ? $_POST['summary']:$book->summary;
+      $db->updateBook($book);
+      $res = $book->modify_meta();
       setcookie('editresult', $res);
     } else {
       setcookie('editresult', '');
@@ -164,17 +173,22 @@ class Dispatcher {
     $current = $_COOKIE['selval'];
     setcookie('booksel', '');
     setcookie('selval', '');
-    echo (isset($_POST['editactive'])) ? $this->display->showDetails($realbook) :
-      $this->display->getEditForm($realbook, $url);
+    echo (isset($_POST['editactive'])) ? $this->display->showDetails($book) :
+      $this->display->getEditForm($book, $url);
     $this->display->printFoot();
     exit;
   }
 
+  /**
+   * @param library $db
+   * @param $path
+   */
   public function handleread($db, $path) {
     $book = $db->getBook($path[1]);
-    $realbook = new ebook($book->file);
+    $book->get_meta();
+    //$realbook = new ebook($book->file);
     header("Content-type: text/html");
-    echo $realbook->getChapter($path[2]);
+    echo $book->getChapter($path[2]);
     exit;
   }
 

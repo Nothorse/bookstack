@@ -79,12 +79,12 @@ class library{
                     '".SQLite3::escapeString($ebook->summary)."',
                     '".SQLite3::escapeString($ebook->id)."',
                     '".time()."')";
-    $this->db->exec($qry);
+    $success = $this->db->exec($qry);
     $qry = "select * from books where md5id = '".$ebook->id."'";
     $res = $this->db->query($qry);
     $row = $res->fetcharray();
     $bookid = $row['id'];
-    $this->db->exec("DELETE FROM taggedbooks WHERE bookid = '$bookid'");
+    $success = $success && $this->db->exec("DELETE FROM taggedbooks WHERE bookid = '$bookid'");
     if (empty($ebook->tags)) $ebook->tags[] = 'untagged';
     foreach($ebook->tags as $id => $tag) {
       $tag = SQLite3::escapeString($tag);
@@ -94,8 +94,9 @@ class library{
         $this->db->exec("insert into tags (tag) values ('$tag')");
         $tagid = $this->db->querySingle($qry);
       }
-      $this->db->exec("INSERT INTO taggedbooks (bookid, tagid) values ('$bookid', '$tagid')");
+      $success = $success && $this->db->exec("INSERT INTO taggedbooks (bookid, tagid) values ('$bookid', '$tagid')");
     }
+    return ($success) ? true : $this->db->lastErrorCode();
   }
 
   /**
@@ -218,11 +219,14 @@ class library{
     return $booklist;
   }
 
+  /**
+   * @param ebook $book
+   */
   public function deleteBook($book) {
     $bookid = $this->db->querySingle('select id from books where md5id =\''.$book->id."'");
     $this->db->exec("delete from books where id = '$bookid'");
     $this->db->exec("delete from taggedbooks where bookid = '$bookid'");
-    rename(dirname($book->file), TRASH .basename(dirname($book->file)));
+    rename(dirname($book->getFullFilePath()), TRASH .basename(dirname($book->file)));
   }
 
   public function fixTags() {

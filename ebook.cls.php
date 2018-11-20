@@ -19,7 +19,7 @@ class ebook {
 
   public function __construct($epub = null) {
     if (file_exists($epub)) {
-      $this->file = $epub;
+      $this->file = str_ireplace(BASEDIR . '/', '', $epub);
       return $this->get_meta($epub);
     } else {
       return $this;
@@ -72,10 +72,11 @@ class ebook {
    * @param  string $epub File reference
    * @return ebook        ebook with metadata filled in
    */
-  public function get_meta($epub) {
+  public function get_meta($epub = null) {
+    $filepath = ($epub) ?: $this->getFullFilePath();
     $zip = new ZipArchive;
 
-    if ($zip->open($epub)===TRUE){
+    if ($zip->open($filepath)===TRUE){
       $container = simplexml_load_string($zip->getFromName(ebook::CONTAINER));
 //       $rootfile = $container->rootfiles->rootfile['full-path'];
       $rootfile = $this->get_metafile($zip);
@@ -187,13 +188,13 @@ class ebook {
     if(!$epub) {
       $epub = $this->file;
     }
-    $canonicaldir = $bookdir . '/' . $this->sanitize($this->author) .'/' . $this->sanitize($this->title);
+    $canonicaldir = $this->sanitize($this->author) .'/' . $this->sanitize($this->title);
     $canonicalname = $canonicaldir . '/' . basename($epub);
     if (dirname($epub) != $canonicaldir) {
-      if (!file_exists($canonicaldir)) {
-        mkdir($canonicaldir, 0755, true);
+      if (!file_exists($bookdir . '/' . $canonicaldir)) {
+        mkdir($bookdir . '/' . $canonicaldir, 0755, true);
       }
-      rename($epub, $canonicalname);
+      rename($epub, $bookdir . '/' . $canonicalname);
       return $canonicalname;
     }
     return $epub;
@@ -208,7 +209,7 @@ class ebook {
     #print_r($this);
     if (isset($chapter)){
       $zip = new ZipArchive;
-      if ($zip->open($this->file)===TRUE){
+      if ($zip->open($this->getFullFilePath())===TRUE){
         $html = $zip->getFromName($this->path.$chapter);
       }
       $html = $this->injectStyle($html);
@@ -310,7 +311,7 @@ class ebook {
   }
 
   public function sanitize($string) {
-    return $string;
+    return str_replace(['/', ',', ';'], ['_', '_'], $string);
       //return ereg_replace('[^A-Za-z0-9- ]', '', $string);
   }
 
@@ -336,4 +337,7 @@ class ebook {
     return basename($this->file);
   }
 
+  public function getFullFilePath() {
+    return BASEDIR . '/' . $this->file;
+  }
 }

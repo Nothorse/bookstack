@@ -29,7 +29,7 @@ class scanFolder extends CommandLine {
         $single = scandir($base . $authordir . '/' . $bookdir);
         foreach ($single as $file) {
           if (strpos($file, '.epub') === false) continue;
-          $path = $base . $authordir . '/' . $bookdir . '/' . $file;
+          $path = $authordir . '/' . $bookdir . '/' . $file;
           $id = $library->getBookIdByPath($path);
           //echo "$id: $path\n";
           if (!$id) {

@@ -14,7 +14,7 @@ class browserdisplay {
           'author' => $book->author,
           'tags' => $book->taglist(),
           'summary' => $book->trunc_summary(250),
-          'finder' => "ebooklib://at.grendel.ebooklib?" . $book->file,
+          'finder' => "ebooklib://at.grendel.ebooklib?" . $book->getFullFilePath(),
           'show' => $this->getproto()."://".SERVER.BASEURL."/show/".$book->id."/".$book->title,
           'download' => $this->getproto()."://".SERVER.BASEURL."/get/".$book->id.'/'.$book->title . '.epub',
         );
@@ -69,13 +69,18 @@ class browserdisplay {
 
   }
 
+  /**
+   * @param Ebook  $book
+   * @param string $protocol
+   * @return string
+   */
   public function showDetails($book, $protocol = 'http') {
     $data = array();
     $data['geturl'] = "$protocol://".SERVER.BASEURL."/get/".$book->id.'/'.$book->title . '.epub';
     $data['editurl'] = "http://".SERVER.BASEURL."/edit/".$book->id.'/'.$book->title;
     $data['deleteurl'] = "http://".SERVER.BASEURL."/delete/".$book->id.'/'.$book->title;
     $data['toc'] = $book->getFormattedToc("http://".SERVER.BASEURL);
-    $data['finder'] = "ebooklib://at.grendel.ebooklib?" . $book->file;
+    $data['finder'] = "ebooklib://at.grendel.ebooklib?" . $book->getFullFilePath();
     $data['title'] = $book->title;
     $data['summary'] = $book->summary;
     $data['tags'] = $book->taglist();
@@ -86,6 +91,11 @@ class browserdisplay {
     return $details->render($data);
   }
 
+  /**
+   * @param Ebook  $book
+   * @param string $url
+   * @return string
+   */
   public function getEditform($book, $url) {
     $tags = implode(', ', $book->tags);
     $backurl = str_replace('edit', 'show', $url);
