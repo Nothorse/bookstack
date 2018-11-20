@@ -34,19 +34,17 @@ class AddBook extends CommandLine {
    */
   public function main() {
     global $argv;
+    $log = "/tmp/ebooklib.log";
     $file = $this->getArgument('FILE');
-    system("/usr/bin/logger ADDBOOK Given $file");
+    error_log("ADDBOOK Given $file", 3, $log);
     if($file && file_exists($file) && strpos($file, '.epub') > 0) {
-      system("/usr/bin/logger ADDBOOK Trying to add $file");
+      error_log("ADDBOOK Trying to add $file",3, $log);
       $book = new ebook($file);
       $book->file = $book->cleanupFile($file);
-      $growl  = "/usr/local/bin/terminal-notifier ";
-//       $growl .= " -n 'Giles (Ebooklib)' ";
-      $growl .= "-message '" . str_ireplace(array("'", '"', ';'), '', $book->title) . " by " . $book->author . "'";
-      $growl .= " -title 'Book added' -open 'http://localhost:8080/index.php/show/" . $book->id ."' -timeout 10";
-      system($growl, $out);
-      system("/usr/bin/logger ADDBOOK $growl");
-      echo $growl;
+      //$growl  = "/usr/local/bin/terminal-notifier ";
+      //$growl .= " -n 'Giles (Ebooklib)' ";
+      $growl = str_ireplace(array("'", '"', ';'), '', $book->title) . " by " . $book->author . "'";
+      error_log("ADDBOOK $growl",3, $log);
       $lib = new library();
       $lib->insertBook($book);
       return true;

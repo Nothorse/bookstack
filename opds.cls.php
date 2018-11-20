@@ -163,6 +163,11 @@ class opdsdisplay {
 
   }
 
+  /**
+   * @param ebook $book
+   * @param string $protocol
+   * @return string
+   */
   public function showDetails($book, $protocol = 'http') {
     $geturl = "$protocol://".SERVER.BASEURL."/get/".$book->id.'/'.$book->title;
     $editurl = "http://".SERVER.BASEURL."/edit/".$book->id.'/'.$book->title;
