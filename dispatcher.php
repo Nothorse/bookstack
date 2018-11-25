@@ -165,14 +165,14 @@ class Dispatcher {
       $book->summary = (isset($_POST['summary'])) ? $_POST['summary']:$book->summary;
       $db->updateBook($book);
       $res = $book->modify_meta();
-      setcookie('editresult', $res);
+      //setcookie('editresult', $res);
     } else {
-      setcookie('editresult', '');
+      //setcookie('editresult', '');
     }
     $type = $_COOKIE['booksel'];
     $current = $_COOKIE['selval'];
-    setcookie('booksel', '');
-    setcookie('selval', '');
+    //setcookie('booksel', '');
+    //setcookie('selval', '');
     echo (isset($_POST['editactive'])) ? $this->display->showDetails($book) :
       $this->display->getEditForm($book, $url);
     $this->display->printFoot();
