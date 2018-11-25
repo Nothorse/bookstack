@@ -85,6 +85,7 @@ class browserdisplay {
     $data['summary'] = $book->summary;
     $data['tags'] = $book->taglist();
     $data['author'] = $book->author;
+    $data['cover'] = $book->getCover(true);
     $data['complete'] = (strpos($data['tags'], 'In-Progress') === false) ?
       ' complete' : '';
     $details = new Template('bookdetails');

@@ -1,22 +1,78 @@
 <?php
+
+/**
+ * Class ebook
+ */
 class ebook {
+  /**
+   * path ot container
+   */
   const CONTAINER = 'META-INF/container.xml';
+  /**
+   * @var string
+   */
   public $author;
+  /**
+   * @var string
+   */
   public $sortauthor;
+  /**
+   * @var string
+   */
   public $title;
+  /**
+   * @var string
+   */
   public $summary;
+  /**
+   * @var string
+   */
   public $id;
+  /**
+   * @var string
+   */
   public $path;
+  /**
+   * @var string
+   */
   public $file;
+  /**
+   * @var array
+   */
   public $tags;
+  /**
+   * @var DOMDocument
+   */
   public $allmeta;
-  public $metaelements;
-  public $manifest;
-  public $toc;
-  public $spine;
-  public $lookup;
+  /**
+   * @var array
+   */
+  public $manifest = [];
+  /**
+   * @var array
+   */
+  public $toc = [];
+  /**
+   * @var array
+   */
+  public $spine = [];
+  /**
+   * @var array
+   */
+  public $otherMeta = [];
+  /**
+   * @var array
+   */
+  public $lookup = [];
+  /**
+   * @var DateTime
+   */
   public $updated;
 
+  /**
+   * ebook constructor.
+   * @param null $epub
+   */
   public function __construct($epub = null) {
     if (file_exists($epub)) {
       $this->file = str_ireplace(BASEDIR . '/', '', $epub);
@@ -26,47 +82,14 @@ class ebook {
     }
   }
 
+  /**
+   * Create md5 id.
+   */
   public function create_id() {
     $this->id = md5('thcatgen'.$this->title.$this->author);
   }
 
-  public function get_thumb($sz = 75, $inline = false) {
-    if(!file_exists(dirname($this->path)."/thumb-$sz.png")) {
-      $img = imagecreatefromjpeg($this->cover);
-      $srcw = imagesy($img);
-      $srch = imagesx($img);
-      $factor = ($srcw/$sz > $srch/$sz) ? $srcw/$sz : $srch/$sz;
-      $dstw = round($srcw/$factor);
-      $dsth = round($srch/$factor);
-      $dst = imagecreatetruecolor($dsth, $dstw);
-      imagecopyresampled($dst, $img, 0, 0, 0, 0, $dsth, $dstw, $srch, $srcw);
-      imagepng($dst, dirname($this->path)."/thumb-$sz.png");
-    }
-    if ($inline) {
-      return "data:image/png;base64," . base64_encode(file_get_contents(dirname($this->path)."/thumb-$sz.png"));
-    } else {
-      file_get_contents(dirname($this->path)."/thumb-$sz.png");
-    }
-  }
 
-  public function get_cover($inline = false) {
-    if(!file_exists(dirname($this->path)."/cover-resized.png")) {
-    $img = imagecreatefromjpeg($this->cover);
-    $srcw = imagesy($img);
-    $srch = imagesx($img);
-    $factor = ($srcw/320 > $srch/480) ? $srcw/320 : $srch/480;
-    $dstw = round($srcw/$factor);
-    $dsth = round($srch/$factor);
-    $dst = imagecreatetruecolor($dsth, $dstw);
-    imagecopyresampled($dst, $img, 0, 0, 0, 0, $dsth, $dstw, $srch, $srcw);
-    imagepng($dst, dirname($this->path)."/cover-resized.png");
-    }
-    if ($inline) {
-      return "data:image/png;base64," . base64_encode(file_get_contents(dirname($this->path)."/cover-resized.png"));
-    } else {
-      file_get_contents(dirname($this->path)."/cover-resized.png");
-    }
-  }
   /**
    * get Metadata of epub
    * @param  string $epub File reference
@@ -111,6 +134,11 @@ class ebook {
       } else {
         $this->summary = 'no summary';
       }
+      $this->otherMeta = [];
+      foreach ($meta->getElementsByTagName('meta') as $id => $node) {
+        $this->otherMeta[$node->getAttribute('name')] = $node->getAttribute('content');
+      }
+
       $taglist = $dom->getElementsByTagName('subject');
       //print_r($taglist);
       if (empty($taglist)) {
@@ -152,6 +180,10 @@ class ebook {
     }
   }
 
+  /**
+   * @param $dom
+   * @return mixed
+   */
   public function prettyprint($dom) {
       $dom->normalize();
       $dom->preserveWhiteSpace = false;
@@ -161,29 +193,21 @@ class ebook {
       return $dom;
   }
 
+  /**
+   * @param $zip
+   * @return SimpleXMLElement
+   */
   public function get_metafile($zip) {
       $container = simplexml_load_string($zip->getFromName(ebook::CONTAINER));
       $rootfile = $container->rootfiles->rootfile['full-path'];
       return $rootfile;
   }
 
-  public function is_cover($zip, $epub) {
-    // check for a cover in the Directory
-    if (file_exists(dirname($epub).'/cover.jpg')) {
-      return dirname($epub).'/cover.jpg';
-    }
-    // check inside the zipfile
-    $zipindex = $zip->locateName('_cover_.jpg', ZIPARCHIVE::FL_NOCASE|ZIPARCHIVE::FL_NODIR);
-    if ($zipindex !== false) {
-      file_put_contents(dirname($epub).'/cover.jpg', $zip->getFromIndex($zipindex));
-      return dirname($epub).'/cover.jpg';
-    }
-    if (file_exists(dirname(dirname($epub)) .'/cover.jpg')) {
-      return dirname(dirname($epub)).'/cover.jpg';
-    }
-    return 'defaultcover.jpg';
-  }
-
+  /**
+   * @param null $epub
+   * @param string $bookdir
+   * @return mixed|null|string
+   */
   public function cleanupFile($epub = null, $bookdir = BASEDIR) {
     if(!$epub) {
       $epub = $this->file;
@@ -200,6 +224,10 @@ class ebook {
     return $epub;
   }
 
+  /**
+   * @param $idref
+   * @return mixed
+   */
   public function getChapter($idref) {
     foreach($this->manifest as $id => $href) {
       if ($id == $idref) {
@@ -218,6 +246,28 @@ class ebook {
     }
   }
 
+  /**
+   * get cover.
+   * @param bool $binary
+   * @return mixed
+   */
+  public function getCover($binary = false) {
+    $coverpath = $this->manifest[$this->otherMeta['cover']];
+    $zip = new ZipArchive;
+    if ($zip->open($this->getFullFilePath())===TRUE){
+      $cover = $zip->getFromName($this->path.$coverpath);
+    }
+    if ($binary) {
+      $data = base64_encode($cover);
+    }
+    return ($binary) ? "data:image/jpeg;base64,$data" : $this->path.$coverpath;
+  }
+
+  /**
+   * @param $html
+   * @param $chapter
+   * @return mixed
+   */
   public function injectNavigation($html, $chapter) {
     $tochead = $this->getFormattedToc() . $this->getNextPrev($chapter);
     $html = str_replace('<body>', $tochead, $html);
@@ -225,14 +275,26 @@ class ebook {
     return $html;
   }
 
+  /**
+   * @param $html
+   * @return mixed
+   */
   public function injectStyle($html) {
     return str_replace('</head>', '<link rel="stylesheet" href="/ui.css" type="text/css" media="all" /></head>', $html);
   }
 
+  /**
+   * @param $html
+   * @return mixed
+   */
   public function injectBooktitle($html) {
     return str_replace('<title>', '<title>'.$this->title.' - ', $html);
   }
 
+  /**
+   * @param string $baseurl
+   * @return string
+   */
   public function getFormattedToc($baseurl = '/index.php') {
     $ret = "<body class='read'><ul class='toc'>\n";
     foreach($this->toc as $chaptername => $href) {
@@ -242,6 +304,11 @@ class ebook {
     return $ret;
   }
 
+  /**
+   * @param $currenthref
+   * @param string $baseurl
+   * @return string
+   */
   public function getNextPrev($currenthref, $baseurl = '/index.php') {
     $current = null;
     $prev = null;
@@ -272,6 +339,9 @@ class ebook {
   }
 
 
+  /**
+   * @return string
+   */
   public function modify_meta() {
     $zip = new ZipArchive;
     if ($zip->open($this->file) === TRUE) {
@@ -310,15 +380,27 @@ class ebook {
     }
   }
 
+  /**
+   * @param $string
+   * @return mixed
+   */
   public function sanitize($string) {
     return str_replace(['/', ',', ';'], ['_', '_'], $string);
       //return ereg_replace('[^A-Za-z0-9- ]', '', $string);
   }
 
+  /**
+   * @param $key
+   * @param $val
+   */
   public function edit_book($key, $val) {
 
   }
 
+  /**
+   * @param $char
+   * @return string
+   */
   public function trunc_summary($char) {
     $ct = strlen($this->summary);
     if ($ct>$char) {
@@ -327,16 +409,25 @@ class ebook {
     return $this->summary;
   }
 
+  /**
+   * @return string
+   */
   public function taglist() {
     if (count($this->tags) > 0) {
       return implode(', ', $this->tags);
     }
   }
 
+  /**
+   * @return string
+   */
   public function __toString() {
     return basename($this->file);
   }
 
+  /**
+   * @return string
+   */
   public function getFullFilePath() {
     return BASEDIR . '/' . $this->file;
   }
