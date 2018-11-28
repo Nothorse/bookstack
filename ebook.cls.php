@@ -1,45 +1,13 @@
 <?php
-
+require_once 'MetaBook.php';
 /**
  * Class ebook
  */
-class ebook {
+class ebook extends MetaBook {
   /**
    * path ot container
    */
   const CONTAINER = 'META-INF/container.xml';
-  /**
-   * @var string
-   */
-  public $author;
-  /**
-   * @var string
-   */
-  public $sortauthor;
-  /**
-   * @var string
-   */
-  public $title;
-  /**
-   * @var string
-   */
-  public $summary;
-  /**
-   * @var string
-   */
-  public $id;
-  /**
-   * @var string
-   */
-  public $path;
-  /**
-   * @var string
-   */
-  public $file;
-  /**
-   * @var array
-   */
-  public $tags;
   /**
    * @var DOMDocument
    */
@@ -64,10 +32,7 @@ class ebook {
    * @var array
    */
   public $lookup = [];
-  /**
-   * @var DateTime
-   */
-  public $updated;
+
 
   /**
    * ebook constructor.
@@ -81,14 +46,6 @@ class ebook {
       return $this;
     }
   }
-
-  /**
-   * Create md5 id.
-   */
-  public function create_id() {
-    $this->id = md5('thcatgen'.$this->title.$this->author);
-  }
-
 
   /**
    * get Metadata of epub
@@ -397,38 +354,4 @@ class ebook {
 
   }
 
-  /**
-   * @param $char
-   * @return string
-   */
-  public function trunc_summary($char) {
-    $ct = strlen($this->summary);
-    if ($ct>$char) {
-      return substr($this->summary, 0, 100) . "...";
-    }
-    return $this->summary;
-  }
-
-  /**
-   * @return string
-   */
-  public function taglist() {
-    if (count($this->tags) > 0) {
-      return implode(', ', $this->tags);
-    }
-  }
-
-  /**
-   * @return string
-   */
-  public function __toString() {
-    return basename($this->file);
-  }
-
-  /**
-   * @return string
-   */
-  public function getFullFilePath() {
-    return BASEDIR . '/' . $this->file;
-  }
 }

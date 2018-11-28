@@ -1,6 +1,7 @@
 <?php
 class browserdisplay {
   public function printBookList($list, $divid = 'list', $curid = null) {
+    $time = microtime(true);
     echo "<div id='$divid'><ul>";
     /** @var ebook $book */
     $template = new Template('booklistentry');
@@ -23,6 +24,9 @@ class browserdisplay {
         echo $template->render($data);
       }
     }
+    global $debug;
+    $debug['Rendertime'] = microtime(true) - $time;
+
     echo "<ul></div>";
   }
 
@@ -48,12 +52,15 @@ class browserdisplay {
   }
 
   public function printHeader() {
+    $time = microtime(true);
     $data = array();
     $data['self'] = 'http://'.SERVER.BASEURL;
-    $data['taglist'] = $this->listTags();
+    //$data['taglist'] = $this->listTags();
     $head = new Template('header');
     echo $head->render($data);
-  }
+    global $debug;
+    $debug['Head render'] = microtime(true) - $time;
+    }
 
   public function buildPage() {
 
@@ -109,6 +116,7 @@ class browserdisplay {
   }
 
   public function printFoot() {
+    $time = microtime(true);
     $foot = <<<EOT
   <script type="text/javascript" language="javascript" charset="utf-8">
   var pos = $('#list li.current').position().top;
@@ -122,9 +130,8 @@ class browserdisplay {
   </html>
 EOT;
     echo $foot;
-   }
+    global $debug;
+    $debug['Rendertime'] = microtime(true) - $time;
+    }
 
-   public function debug($msg) {
-    echo $msg;
-   }
 }

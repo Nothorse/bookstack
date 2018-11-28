@@ -16,3 +16,5 @@ define('PORT', $_SERVER["SERVER_PORT"]);
 }
 
 date_default_timezone_set('Europe/Vienna');
+global $debug;
+$debug['start'] = 0;
