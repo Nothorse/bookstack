@@ -46,7 +46,7 @@ class browserdisplay {
     $list = $db->getTagList(false);
     $taglist = '';
     foreach($list as $id => $tag) {
-      $taglist .= "<li><a href=\"\">".$tag['name']."</a></li>";
+      $taglist .= "<li><a href=\"\">".$tag['name']. ' (' . $tag['books'][0] . " books)</a></li>";
     }
     return "<ul>$taglist</ul>";
   }
