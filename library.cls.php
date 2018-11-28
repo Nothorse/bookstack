@@ -215,7 +215,7 @@ class library{
     while ($row = $res->fetchArray()) {
       if(strlen($row['tag']) > 0) {
         $booklist[$row['tag']]['name'] = $row['tag'];
-        $booklist[$row['tag']]['books'] = $row['bookcount'];
+        $booklist[$row['tag']]['books'][] = $row['bookcount'];
       }
     }
     $debug['with subqueries'] = microtime(true) - $time;
