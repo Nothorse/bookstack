@@ -6,11 +6,14 @@ class library{
   private $db;
 
   public function __construct($db = null) {
+    global $debug;
     if (!$db) {
       $db = BASEDIR . '/.library.db';
     }
+    $time = microtime(true);
     $this->db = $this->getdb($db);
     $this->checkTables();
+    $debug['library startup'] = microtime(true) - $time;
   }
 
 
@@ -146,18 +149,8 @@ class library{
   }
 
   public function getBooklist($order = 'added desc', $where = '', $limit = false) {
-    $lwhere = urldecode($where);
+    $res = $this->bookQuery($order, $where, $limit);
     $booklist = array();
-    $limstr = ($limit) ? " LIMIT 30": '';
-    $qry = "select title, author, sortauthor, file, summary, md5id, added, " .
-      "group_concat(tag) " .
-      "as tags from books" .
-      " join taggedbooks on books.id = bookid " .
-      " join tags on tagid = tags.id " .
-      " $lwhere " .
-      " group by books.id" .
-      " order by $order $limstr";
-    $res = $this->db->query($qry);
     while ($row = $res->fetchArray()) {
         $book = new ebook();
         $book->title = $row['title'];
@@ -171,6 +164,29 @@ class library{
         $booklist[$book->id] = $book;
     }
     return $booklist;
+  }
+
+  public function getBookarray($order = 'added desc', $where = '', $limit = false) {
+    global $debug;
+    $res = $this->bookQuery($order, $where, $limit);
+    $booklist = array();
+    $time = microtime(true);
+    while ($row = $res->fetchArray()) {
+      $book = new MetaBook();
+      $book->title = $row['title'];
+      $book->author = $row['author'];
+      $book->sortauthor = $row['sortauthor'];
+      $book->file = $row['file'];
+      $book->summary = $row['summary'];
+      $book->id = $row['md5id'];
+      $book->updated = $row['added'];
+      $book->tags = explode (',', $row['tags']);
+      $booklist[$book->id] = $book;
+    }
+    $endtime = microtime(true) - $time;
+    $debug["Fetcharray"] = $endtime;
+    return $booklist;
+
   }
 
   public function getAuthorlist($order = 'sortauthor asc') {
@@ -187,17 +203,22 @@ class library{
   }
 
   public function getTagList($updatedtags = true) {
+    $time = microtime(true);
     $booklist = array();
     $where = (!$updatedtags) ? " where tag not like 'last update%'":'';
-    $qry = "select * from tags $where order by tag asc";
+    $qry = "select tag, count(bookid) as bookcount from tags" .
+      " left join taggedbooks on tagid = id" .
+      " $where group by tag order by tag asc";
     $res = $this->db->query($qry);
+    global $debug;
+    $debug['getTags'] = microtime(true) - $time;
     while ($row = $res->fetchArray()) {
       if(strlen($row['tag']) > 0) {
-        $count = $this->db->querySingle("select count(bookid) from taggedbooks where tagid = '".$row['id']."'");
         $booklist[$row['tag']]['name'] = $row['tag'];
-        $booklist[$row['tag']]['books'][] = $count;
+        $booklist[$row['tag']]['books'] = $row['bookcount'];
       }
     }
+    $debug['with subqueries'] = microtime(true) - $time;
     return $booklist;
   }
 
@@ -256,7 +277,29 @@ class library{
     } else {
       return $bookid;
     }
-  }
+  }/**
+ * @param $order
+ * @param $where
+ * @param $limit
+ * @return SQLite3Result
+ */protected function bookQuery($order, $where, $limit)
+{
+  $time = microtime(true);
+  $lwhere = urldecode($where);
+  $limstr = ($limit) ? " LIMIT 30" : '';
+  $qry = "select title, author, sortauthor, file, summary, md5id, added, " .
+    "group_concat(tag) " .
+    "as tags from books" .
+    " join taggedbooks on books.id = bookid " .
+    " join tags on tagid = tags.id " .
+    " $lwhere " .
+    " group by books.id" .
+    " order by $order $limstr";
+  $res = $this->db->query($qry);
+  global $debug;
+  $debug["DB Select"] = microtime(true) - $time;
+  return $res;
+}
 
 }
 

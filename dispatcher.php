@@ -6,12 +6,25 @@ require_once('browser.cls.php');
 require_once('library.cls.php');
 require_once('template.php');
 
+/**
+ * Class Dispatcher
+ */
 class Dispatcher {
 
+  /**
+   * @var library
+   */
   private $db;
 
+  /**
+   * @var opdsdisplay
+   */
   private $display;
 
+  /**
+   * Dispatcher constructor.
+   * @param bool $odps
+   */
   public function __construct($odps = false) {
     $this->db = new library();
     if (!$odps) {
@@ -22,11 +35,18 @@ class Dispatcher {
   }
 
 
+  /**
+   * @param $path
+   */
   public function handleRequest($path) {
     $handler = 'handle'.$path[0];
     $this->$handler($this->db, $path);
   }
 
+  /**
+   * @param $db
+   * @param $path
+   */
   public function handle($db, $path) {
     setcookie('booksel', '');
     setcookie('selval', '');
@@ -43,7 +63,7 @@ class Dispatcher {
         $this->display->printBookList($list, 'bookswide');
         break;
       case 'date':
-        $list = $this->listdir_by_date($path, $db);
+        $list = $this->listdir_by_date($path, $db, false);
         $this->display->printBookList($list, 'bookswide');
         break;
       case 'tags':
@@ -51,7 +71,7 @@ class Dispatcher {
         $this->display->printAuthorList($list, 'tag');
         break;
       case 'recent':
-        $list = $this->listdir_by_date($path, $db, false);
+        $list = $this->listdir_by_date($path, $db, true);
         $this->display->printBookList($list, 'bookswide');
         break;
       default:
@@ -76,11 +96,18 @@ class Dispatcher {
     exit;
   }
 
+  /**
+   *
+   */
   public function handlefixtags() {
       $this->db->fixTags();
       $this->display->debug('fix tags');
   }
 
+  /**
+   * @param $db
+   * @param $path
+   */
   public function handleauthor($db, $path) {
     setcookie('booksel', 'author', 0, '/');
     list($discard,$method, $author) = explode('/', $_SERVER['PATH_INFO']);
@@ -94,6 +121,10 @@ class Dispatcher {
     exit;
   }
 
+  /**
+   * @param $db
+   * @param $path
+   */
   public function handletag($db, $path) {
     setcookie('booksel', 'tag', 0, '/');
     setcookie('selval', $path[1], 0, '/');
@@ -106,11 +137,14 @@ class Dispatcher {
     exit;
   }
 
+  /**
+   * @param  library $db
+   * @param $path
+   */
   public function handlemeta($db, $path) {
     $book = $db->getBook($path[1]);
-    $newbook = new ebook($book->file);
+    $book->get_meta();
     header("Content-Type: text/plain");
-    #print_r($newbook);
     echo $newbook->allmeta->saveXML();
     exit;
   }
@@ -132,11 +166,8 @@ class Dispatcher {
     setcookie('selval', '');
     $list = ($type == 'tag') ? $db->getTagList() : $db->getAuthorlist();
     $this->display->printHeader();
-    //$this->display->printAuthorList($list, $type, $current);
-    $booklist = ($type == 'tag')? $db->getTaggedBooks($current) : $db->getBookList('added desc', 'where author = \'' . SQLite3::escapeString($current) . '\'');
-    //$this->display->printBookList($booklist, 'books', $path[1]);
     $book->get_meta();
-    echo $this->display->showDetails($book);//new ebook($book->file));
+    echo $this->display->showDetails($book);
     $this->display->printFoot();
     exit;
   }
@@ -192,6 +223,10 @@ class Dispatcher {
     exit;
   }
 
+  /**
+   * @param $db
+   * @param $path
+   */
   public function handledelete($db, $path) {
     $book = $db->getBook($path[1]);
     $db->deleteBook($book);
@@ -199,20 +234,47 @@ class Dispatcher {
     exit;
   }
 
+  /**
+   * @param $file
+   * @return mixed
+   */
   public function getSuffix($file) {
     list($name, $suffix) = explode('.', $file);
     return $suffix;
   }
 
+  /**
+   * List books by date
+   * @param  string $path
+   * @param  library $db
+   * @param bool $limit
+   * @return mixed
+   */
   public function listdir_by_date($path, $db, $limit = false){
-    return $db->getBooklist('added desc', null, $limit);
+    return $db->getBookarray('added desc', null, $limit);
   }
+
+  /**
+   * @param $path
+   * @param $db
+   * @return mixed
+   */
   public function listdir_by_author($path, $db){
     return $db->getBooklist('sortauthor asc');
   }
+
+  /**
+   * @param $path
+   * @param $db
+   * @return mixed
+   */
   public function listdir_by_name($path, $db){
     return $db->getBooklist('title asc');
   }
+
+  /**
+   * @return string
+   */
   public function getproto() {
       if(strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false) {
       return "epub";
