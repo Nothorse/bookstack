@@ -36,15 +36,15 @@ class AddBook extends CommandLine {
     global $argv;
     $log = "/tmp/ebooklib.log";
     $file = $this->getArgument('FILE');
-    error_log("ADDBOOK Given $file", 3, $log);
+    error_log("ADDBOOK Given $file\n", 3, $log);
     if($file && file_exists($file) && strpos($file, '.epub') > 0) {
-      error_log("ADDBOOK Trying to add $file",3, $log);
+      error_log("ADDBOOK Trying to add $file\n",3, $log);
       $book = new ebook($file);
       $book->file = $book->cleanupFile($file);
       //$growl  = "/usr/local/bin/terminal-notifier ";
       //$growl .= " -n 'Giles (Ebooklib)' ";
-      $growl = str_ireplace(array("'", '"', ';'), '', $book->title) . " by " . $book->author . "'";
-      error_log("ADDBOOK $growl",3, $log);
+      $growl = str_ireplace(array("'", '"', ';'), '', $book->title) . " by " . $book->author;
+      error_log("ADDED $growl (" . $book->getFullFilePath() .")\n",3, $log);
       $lib = new library();
       $lib->insertBook($book);
       return true;
