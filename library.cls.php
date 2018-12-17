@@ -297,12 +297,16 @@ class library{
     } else {
       return $bookid;
     }
-  }/**
-   * @param $order
-   * @param $where
-   * @param $limit
+  }
+
+  /**
+   * Book query.
+   * @param string  $order order by
+   * @param string  $where where clause
+   * @param bool $limit limit
    * @return SQLite3Result
-   */protected function bookQuery($order, $where, $limit)
+   */
+  protected function bookQuery($order, $where, $limit)
   {
     $time = microtime(true);
     $lwhere = urldecode($where);
@@ -327,4 +331,3 @@ class library{
      $this->db->exec($query);
   }
 }
-

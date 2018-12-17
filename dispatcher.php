@@ -256,8 +256,8 @@ class Dispatcher {
   }
 
   /**
-   * @param $path
-   * @param $db
+   * @param string  $path
+   * @param library $db
    * @return mixed
    */
   public function listdir_by_name($path, $db){
