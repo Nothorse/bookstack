@@ -1,7 +1,7 @@
 <?php
 namespace EBookLib;
 
-require_once("../config.php");
+require_once(dirname(__DIR__) . "/config.php");
 /**
  * Base class for sqlite interaction with schema and queries.
  */
@@ -22,7 +22,7 @@ class Library{
 
 
   private function getdb($dbname = "library.sqlite") {
-    $base=new SQLite3($dbname);
+    $base= new \SQLite3($dbname);
     if (!$base)
     {
       echo "SQLite NOT supported.\n";
