@@ -1,5 +1,17 @@
 <?php
-class browserdisplay {
+/**
+ * Basic browser output for lists.
+ */
+class BrowserDisplay {
+
+  /**
+   * Generate booklist and echo out.
+   * @method printBookList
+   * @param  array  $list  array of books
+   * @param  string $divid idv id(?)
+   * @param  string $curid current id
+   * @return void   no return
+   */
   public function printBookList($list, $divid = 'list', $curid = null) {
     $time = microtime(true);
     echo "<div id='$divid'><ul>";
@@ -30,6 +42,12 @@ class browserdisplay {
     echo "<ul></div>";
   }
 
+  /**
+   * get a formatted list (currently unused)
+   * @method getFormattedList
+   * @param  string           $type author
+   * @return string                 unordered list html
+   */
   public function getFormattedList($type = 'author') {
     $db = new library();
     $list = $db->getAuthorList();
@@ -41,6 +59,22 @@ class browserdisplay {
     return $formattedlist;
   }
 
+  /**
+   * [printAuthorList description]
+   * @method printAuthorList
+   * @param  array          $list  author list
+   * @param  string          $type type of list
+   * @return string                html code
+   */
+  public function printAuthorList($list, $type) {
+    return $this->getFormattedList();
+  }
+
+  /**
+   * [listTags description]
+   * @method listTags
+   * @return [type]   [description]
+   */
   public function listTags() {
     $db = new library();
     $list = $db->getTagList(false);
@@ -51,6 +85,11 @@ class browserdisplay {
     return "<ul>$taglist</ul>";
   }
 
+  /**
+   * print header
+   * @method printHeader
+   * @return string      html code
+   */
   public function printHeader() {
     $time = microtime(true);
     $data = array();
@@ -60,8 +99,20 @@ class browserdisplay {
     echo $head->render($data);
     global $debug;
     $debug['Head render'] = microtime(true) - $time;
-    }
+  }
 
+  public function printFooter() {
+    $tpl = new Template('footer');
+    echo $tpl->render(['foot' => true]);
+  }
+
+
+  /**
+   * ignoreed function
+   * @method buildPage
+   * @deprecated ignore it
+   * @return string    html code
+   */
   public function buildPage() {
 
 
@@ -77,8 +128,10 @@ class browserdisplay {
   }
 
   /**
-   * @param Ebook  $book
-   * @param string $protocol
+   * Create and show detail screen.
+   * @method string showDetails(Ebook, string)
+   * @param ebook  $book     the book to show details for
+   * @param string $protocol http (only used to have odps)
    * @return string
    */
   public function showDetails($book, $protocol = 'http') {

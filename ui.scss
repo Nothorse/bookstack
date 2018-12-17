@@ -39,6 +39,15 @@ body.normal {
       font-size: 15pt;
       float: left;
     }
+    #showhidedl {
+      float: right;
+      width: 18px;
+      height: 18px;
+      text-align: center;
+      margin-right: 5px;
+      cursor: pointer;
+      font-size: 15pt;
+    }
     ul {
       list-style: none;
       line-height: 10px;
@@ -161,6 +170,18 @@ body.normal {
       }
     }
     li.current {
+    }
+  }
+  #downloader {
+    position:absolute;
+    top:40px;
+    right:5px;
+    width:400px;
+    height:350px;
+    display: none;
+    iframe {
+      width:400px;
+      height:350px;
     }
   }
   #bookswide {

@@ -25,6 +25,14 @@ body.normal {
       cursor: pointer;
       font-size: 15pt;
       float: left; }
+    body.normal #bluebar #showhidedl {
+      float: right;
+      width: 18px;
+      height: 18px;
+      text-align: center;
+      margin-right: 5px;
+      cursor: pointer;
+      font-size: 15pt; }
     body.normal #bluebar ul {
       list-style: none;
       line-height: 10px;
@@ -129,6 +137,16 @@ body.normal {
         white-space: nowrap; }
         body.normal #list ul li a {
           display: inline-block; }
+  body.normal #downloader {
+    position: absolute;
+    top: 40px;
+    right: 5px;
+    width: 400px;
+    height: 350px;
+    display: none; }
+    body.normal #downloader iframe {
+      width: 400px;
+      height: 350px; }
   body.normal #bookswide {
     position: fixed;
     height: 100%;

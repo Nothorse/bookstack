@@ -64,6 +64,26 @@ class library{
                 )")
         ) exit ("Create SQLite Database Error\n");
     }
+    $q=$this->db->query("PRAGMA table_info(activitylog)");
+    if ($q->fetchArray() < 1) {
+        if (!$this->db->exec("
+            CREATE TABLE activitylog (
+                logid INTEGER NOT NULL PRIMARY KEY,
+                datestamp  TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                entry TEXT NOT NULL
+                )")
+        ) exit ("Create SQLite Database Error\n");
+    }
+    $q=$this->db->query("PRAGMA table_info(downloadqueue)");
+    if ($q->fetchArray() < 1) {
+        if (!$this->db->exec("
+            CREATE TABLE downloadqueue (
+                queueid INTEGER NOT NULL,
+                datestamp  TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                entry VARCHAR(255) NOT NULL
+                )")
+        ) exit ("Create SQLite Database Error\n");
+    }
   }
 
   public function insertBook($ebook) {
@@ -278,28 +298,33 @@ class library{
       return $bookid;
     }
   }/**
- * @param $order
- * @param $where
- * @param $limit
- * @return SQLite3Result
- */protected function bookQuery($order, $where, $limit)
-{
-  $time = microtime(true);
-  $lwhere = urldecode($where);
-  $limstr = ($limit) ? " LIMIT 30" : '';
-  $qry = "select title, author, sortauthor, file, summary, md5id, added, " .
-    "group_concat(tag) " .
-    "as tags from books" .
-    " join taggedbooks on books.id = bookid " .
-    " join tags on tagid = tags.id " .
-    " $lwhere " .
-    " group by books.id" .
-    " order by $order $limstr";
-  $res = $this->db->query($qry);
-  global $debug;
-  $debug["DB Select"] = microtime(true) - $time;
-  return $res;
-}
+   * @param $order
+   * @param $where
+   * @param $limit
+   * @return SQLite3Result
+   */protected function bookQuery($order, $where, $limit)
+  {
+    $time = microtime(true);
+    $lwhere = urldecode($where);
+    $limstr = ($limit) ? " LIMIT 30" : '';
+    $qry = "select title, author, sortauthor, file, summary, md5id, added, " .
+      "group_concat(tag) " .
+      "as tags from books" .
+      " join taggedbooks on books.id = bookid " .
+      " join tags on tagid = tags.id " .
+      " $lwhere " .
+      " group by books.id" .
+      " order by $order $limstr";
+    $res = $this->db->query($qry);
+    global $debug;
+    $debug["DB Select"] = microtime(true) - $time;
+    return $res;
+  }
 
+  public function logThis($msg) {
+     $query = "INSERT INTO activitylog (entry) VALUES ('" .
+       SQLite3::escapeString($msg) . "')";
+     $this->db->exec($query);
+  }
 }
 

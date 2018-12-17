@@ -1,3 +1,12 @@
+<html><head>
+  <title>DownloadQueue</title>
+  <style>
+    body {
+      background:  #DADFE8;
+    }
+  </style>
+</head>
+<body>
 <?php
 require_once(__DIR__ . "/config.php");
 /**
@@ -16,14 +25,16 @@ if (!isset($_POST['nohtml'])) {
 EOF;
   echo "<hr />";
 }
-$file = '/tmp/ebooklib.log';
+$file = __DIR__ . '/tmp/ebooklib.log';
 $log = `tail -n 10 $file`;
 
 if (isset($_POST['url'])) {
   $url = $_POST['url'];
   echo (!isset($_POST['nohtml'])) ? "Accepted URL " . $url . " for download.<hr />" :'';
   error_log("Download queued for URL $url\n", 3, $file);
-  file_put_contents('/tmp/download_queued', $url);
+  $queuefile = __DIR__ . '/tmp/download_queued';
+  $res = file_put_contents($queuefile, $url);
+  chmod($queuefile, 0666);
   echo (!isset($_POST['nohtml'])) ? "Current log:<br>" :'';
   echo (!isset($_POST['nohtml'])) ? nl2br($log) :'';
   echo (isset($_POST['nohtml'])) ? 'success' : '';
@@ -31,3 +42,5 @@ if (isset($_POST['url'])) {
   echo (!isset($_POST['nohtml'])) ? "Current Log: <br/>" :'';
   echo (!isset($_POST['nohtml'])) ? nl2br($log) :'';
 }
+?>
+</body></html>
