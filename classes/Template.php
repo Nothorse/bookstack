@@ -9,7 +9,7 @@ class Template {
   private $template;
 
   public function __construct($templatename) {
-    $templatefile = __DIR__ . '/templates/' . $templatename . '.tpl';
+    $templatefile = dirname(__DIR__) . '/templates/' . $templatename . '.tpl';
     $this->template = file_get_contents($templatefile);
   }
 
