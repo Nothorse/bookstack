@@ -4,13 +4,14 @@
  */
 define('SHELL', true);
 require_once(__DIR__ . "/config.php");
-require_once(__DIR__ . "/commandline.cls.php");
-require_once(__DIR__ . "/ebook.cls.php");
-require_once(__DIR__ . "/library.cls.php");
+require "vendor/autoload.php";
 $path = '/usr/lib/php/pear';
 
 
 class scanFolder extends CommandLine {
+
+  use EbookLib;
+
   protected function initParams() {
     $this->addUsage('scan the bookdir');
   }
@@ -33,7 +34,7 @@ class scanFolder extends CommandLine {
           $id = $library->getBookIdByPath($path);
           //echo "$id: $path\n";
           if (!$id) {
-            $book = new ebook($path);
+            $book = new Ebook($path);
             //$book->file = $book->cleanupFile($file);
             echo "To be added: " . $book->title . ' by ' . $book->author . "\n";
             $library->insertBook($book);

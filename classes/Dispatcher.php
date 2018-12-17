@@ -1,9 +1,6 @@
 <?php
+namespace EBookLib;
 require_once('config.php');
-require_once('ebook.cls.php');
-require_once('BrowserDisplay.php');
-require_once('library.cls.php');
-require_once('template.php');
 
 /**
  * Class Dispatcher
@@ -11,7 +8,7 @@ require_once('template.php');
 class Dispatcher {
 
   /**
-   * @var library
+   * @var Library
    */
   private $db;
 
@@ -24,8 +21,8 @@ class Dispatcher {
    * Dispatcher constructor.
    */
   public function __construct() {
-    $this->db = new library();
-    $this->display = new browserdisplay();
+    $this->db = new Library();
+    $this->display = new BrowserDisplay();
   }
 
 
@@ -39,7 +36,7 @@ class Dispatcher {
 
   /**
    * handler
-   * @param library $db   libray
+   * @param Library $db   libray
    * @param string  $path path
    */
   public function handle($db, $path) {
@@ -77,8 +74,8 @@ class Dispatcher {
   }
 
   /**
-   * @param library $db
-   * @param string $path
+   * @param Library $db   library
+   * @param string  $path path
    */
   public function handleget($db, $path) {
     $book = $db->getBook($path[1]);
@@ -97,8 +94,8 @@ class Dispatcher {
   }
 
   /**
-   * @param $db
-   * @param $path
+   * @param Library $db   library
+   * @param string  $path path
    */
   public function handleauthor($db, $path) {
     setcookie('booksel', 'author', 0, '/');
@@ -114,8 +111,8 @@ class Dispatcher {
   }
 
   /**
-   * @param $db
-   * @param $path
+   * @param Library $db   library
+   * @param string  $path path
    */
   public function handletag($db, $path) {
     setcookie('booksel', 'tag', 0, '/');
@@ -130,8 +127,8 @@ class Dispatcher {
   }
 
   /**
-   * @param  library $db
-   * @param $path
+   * @param Library $db   library
+   * @param string  $path path
    */
   public function handlemeta($db, $path) {
     $book = $db->getBook($path[1]);
@@ -142,8 +139,8 @@ class Dispatcher {
   }
 
   /**
-   * @param library $db
-   * @param $path
+   * @param Library $db   library
+   * @param string  $path path
    */
   public function handleshow($db, $path) {
     $book = $db->getBook($path[1]);
@@ -165,8 +162,8 @@ class Dispatcher {
   }
 
     /**
-     * @param Library $db
-     * @param $path
+     * @param Library $db   library
+     * @param string  $path path
      */
     public function handleedit($db, $path) {
     $book = $db->getBook($path[1]);
@@ -203,21 +200,20 @@ class Dispatcher {
   }
 
   /**
-   * @param library $db
-   * @param $path
+   * @param Library $db   library
+   * @param string  $path path
    */
   public function handleread($db, $path) {
     $book = $db->getBook($path[1]);
     $book->get_meta();
-    //$realbook = new ebook($book->file);
     header("Content-type: text/html");
     echo $book->getChapter($path[2]);
     exit;
   }
 
   /**
-   * @param $db
-   * @param $path
+   * @param Library $db   library
+   * @param string  $path path
    */
   public function handledelete($db, $path) {
     $book = $db->getBook($path[1]);
@@ -237,9 +233,9 @@ class Dispatcher {
 
   /**
    * List books by date
-   * @param  string $path
-   * @param  library $db
-   * @param bool $limit
+   * @param  string  $path
+   * @param  Library $db
+   * @param  bool    $limit
    * @return mixed
    */
   public function listdir_by_date($path, $db, $limit = false){
@@ -257,7 +253,7 @@ class Dispatcher {
 
   /**
    * @param string  $path
-   * @param library $db
+   * @param Library $db
    * @return mixed
    */
   public function listdir_by_name($path, $db){

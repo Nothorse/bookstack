@@ -1,9 +1,9 @@
 <?php
-require_once 'MetaBook.php';
+namespace EBookLib;
 /**
- * Class ebook
+ * Class Ebook
  */
-class ebook extends MetaBook {
+class Ebook extends MetaBook {
   /**
    * path ot container
    */
@@ -50,15 +50,15 @@ class ebook extends MetaBook {
   /**
    * get Metadata of epub
    * @param  string $epub File reference
-   * @return ebook        ebook with metadata filled in
+   * @return Ebook        ebook with metadata filled in
    */
   public function get_meta($epub = null) {
     $filepath = ($epub) ?: $this->getFullFilePath();
     $zip = new ZipArchive;
 
     if ($zip->open($filepath)===TRUE){
-      $container = simplexml_load_string($zip->getFromName(ebook::CONTAINER));
-//       $rootfile = $container->rootfiles->rootfile['full-path'];
+      $container = simplexml_load_string($zip->getFromName(Ebook::CONTAINER));
+      //$rootfile = $container->rootfiles->rootfile['full-path'];
       $rootfile = $this->get_metafile($zip);
       $path = dirname($rootfile);
       $this->path = ($path != '.') ? $path . '/':'';
@@ -155,7 +155,7 @@ class ebook extends MetaBook {
    * @return SimpleXMLElement
    */
   public function get_metafile($zip) {
-      $container = simplexml_load_string($zip->getFromName(ebook::CONTAINER));
+      $container = simplexml_load_string($zip->getFromName(Ebook::CONTAINER));
       $rootfile = $container->rootfiles->rootfile['full-path'];
       return $rootfile;
   }
@@ -237,7 +237,7 @@ class ebook extends MetaBook {
    * @return mixed
    */
   public function injectStyle($html) {
-    return str_replace('</head>', '<link rel="stylesheet" href="/ui.css" type="text/css" media="all" /></head>', $html);
+    return str_replace('</head>', '<link rel="stylesheet" href="/rsrc/ui.css" type="text/css" media="all" /></head>', $html);
   }
 
   /**

@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>TH's Library Devel</title>
-    <script src="/jquery.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+    <script src="/rsrc/jquery.js" type="text/javascript" language="javascript" charset="utf-8"></script>
     <script>
         function reload() {
             window.location = '%%self%%';
@@ -42,7 +42,7 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="/ui.css" type="text/css" media="all">
+    <link rel="stylesheet" href="/rsrc/ui.css" type="text/css" media="all">
 </head>
 <body style='padding:0;margin:0;' class="normal">
 <div id="bluebar">
