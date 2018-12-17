@@ -101,6 +101,10 @@ class BrowserDisplay {
     $debug['Head render'] = microtime(true) - $time;
   }
 
+  /**
+   * print footer of page
+   * @return string html code
+   */
   public function printFooter() {
     $tpl = new Template('footer');
     echo $tpl->render(['foot' => true]);
@@ -118,13 +122,13 @@ class BrowserDisplay {
 
   }
 
+  /**
+   * get request protocol.
+   * @deprecated irrelevant don't use anymore
+   * @return string
+   */
   public function getproto() {
-    if(strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false) {
-      return "epub";
-    } else {
-      return "http";
-    }
-
+    return "http";
   }
 
   /**
