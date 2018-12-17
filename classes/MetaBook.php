@@ -1,12 +1,8 @@
 <?php
-
+namespace EBookLib;
 /**
  * MetaBook
- *
- * @package
- * @copyright intevo.websolutions gmbh 2018
- * @author    TH <thomas.hassan@teambox.at>
- */
+ **/
 class MetaBook {
   /**
    * @var string
@@ -72,7 +68,8 @@ class MetaBook {
   }
 
   /**
-   * @param $char
+   * Truncate summary.
+   * @param  int $char number of characters
    * @return string
    */
   public function trunc_summary($char) {
@@ -84,6 +81,7 @@ class MetaBook {
   }
 
   /**
+   * Get the full path.
    * @return string
    */
   public function getFullFilePath() {

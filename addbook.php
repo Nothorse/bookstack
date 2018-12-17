@@ -4,19 +4,18 @@
 // ini_set('display_errors', '0');     # don't show any errors...
 //error_reporting(E_ALL | E_STRICT);
 define('SHELL', true);
+require_once(__DIR__ . "/config.php");
+require "vendor/autoload.php";
 /**
  * Needs to manually require the parent class, as it is called outside the weblication framework
  */
-require_once(__DIR__ . "/config.php");
-require_once(__DIR__ . "/commandline.cls.php");
-require_once(__DIR__ . "/ebook.cls.php");
-require_once(__DIR__ . "/library.cls.php");
 $path = '/usr/lib/php/pear';
 
 set_include_path(get_include_path() . PATH_SEPARATOR . $path);
 
 class AddBook extends CommandLine {
 
+  use EbookLib;
   /**
    * initParams -- Defining all parameters
    */
@@ -39,13 +38,13 @@ class AddBook extends CommandLine {
     error_log("ADDBOOK Given $file\n", 3, $log);
     if($file && file_exists($file) && strpos($file, '.epub') > 0) {
       error_log("ADDBOOK Trying to add $file\n",3, $log);
-      $book = new ebook($file);
+      $book = new Ebook($file);
       $book->file = $book->cleanupFile($file);
       //$growl  = "/usr/local/bin/terminal-notifier ";
       //$growl .= " -n 'Giles (Ebooklib)' ";
       $growl = str_ireplace(array("'", '"', ';'), '', $book->title) . " by " . $book->author;
       error_log("ADDED $growl (" . $book->getFullFilePath() .")\n",3, $log);
-      $lib = new library();
+      $lib = new Library();
       $lib->insertBook($book);
       return true;
     } else {

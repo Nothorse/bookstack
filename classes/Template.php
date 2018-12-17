@@ -1,4 +1,5 @@
 <?php
+namespace EBookLib;
 /**
  * Template Engine
  */

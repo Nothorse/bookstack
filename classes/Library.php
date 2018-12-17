@@ -1,7 +1,11 @@
 <?php
-require_once(__DIR__ . "/config.php");
+namespace EBookLib;
 
-class library{
+require_once("../config.php");
+/**
+ * Base class for sqlite interaction with schema and queries.
+ */
+class Library{
 
   private $db;
 
