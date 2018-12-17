@@ -12,6 +12,11 @@ class Template {
     $this->template = file_get_contents($templatefile);
   }
 
+  /**
+   * replace placeholders in template with variables from $data
+   * @param  array $data variable replacements
+   * @return string      html code
+   */
   public function render($data) {
     return $this->replacePattern($this->template, $data);
   }

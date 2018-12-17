@@ -67,4 +67,5 @@
             <a href="%%self%%?sort=list">Lists</a>
         </li>
     </ul>
+    <div id="showhidedl" style="float:right;" onclick="$('#downloader').slideToggle()">➕</div>
 </div>

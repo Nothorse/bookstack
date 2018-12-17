@@ -34,7 +34,7 @@ class AddBook extends CommandLine {
    */
   public function main() {
     global $argv;
-    $log = "/tmp/ebooklib.log";
+    $log = __DIR__ . "/tmp/ebooklib.log";
     $file = $this->getArgument('FILE');
     error_log("ADDBOOK Given $file\n", 3, $log);
     if($file && file_exists($file) && strpos($file, '.epub') > 0) {

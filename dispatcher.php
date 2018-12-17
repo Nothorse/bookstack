@@ -1,8 +1,7 @@
 <?php
 require_once('config.php');
 require_once('ebook.cls.php');
-require_once('opds.cls.php');
-require_once('browser.cls.php');
+require_once('BrowserDisplay.php');
 require_once('library.cls.php');
 require_once('template.php');
 
@@ -23,15 +22,10 @@ class Dispatcher {
 
   /**
    * Dispatcher constructor.
-   * @param bool $odps
    */
-  public function __construct($odps = false) {
+  public function __construct() {
     $this->db = new library();
-    if (!$odps) {
-      $this->display = new browserdisplay();
-    } else {
-      $this->display = new opdsdisplay();
-    }
+    $this->display = new browserdisplay();
   }
 
 
@@ -44,8 +38,9 @@ class Dispatcher {
   }
 
   /**
-   * @param $db
-   * @param $path
+   * handler
+   * @param library $db   libray
+   * @param string  $path path
    */
   public function handle($db, $path) {
     setcookie('booksel', '');
@@ -63,7 +58,7 @@ class Dispatcher {
         $this->display->printBookList($list, 'bookswide');
         break;
       case 'date':
-        $list = $this->listdir_by_date($path, $db, false);
+        $list = $this->listdir_by_date($path, $db);
         $this->display->printBookList($list, 'bookswide');
         break;
       case 'tags':
@@ -71,17 +66,14 @@ class Dispatcher {
         $this->display->printAuthorList($list, 'tag');
         break;
       case 'recent':
-        $list = $this->listdir_by_date($path, $db, true);
+        $list = $this->listdir_by_date($path, $db);
         $this->display->printBookList($list, 'bookswide');
         break;
       default:
-        if (ODPS == PORT) {
-          $this->display->printNavigation();
-        } else {
-          $list = $this->listdir_by_date($path, $db, false);
-          $this->display->printBookList($list, 'bookswide');
-        }
+        $list = $this->listdir_by_date($path, $db, 20);
+        $this->display->printBookList($list, 'bookswide');
     }
+    $this->display->printFooter();
   }
 
   /**
