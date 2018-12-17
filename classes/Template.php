@@ -6,8 +6,16 @@ namespace EBookLib;
 
 class Template {
 
+  /**
+   * template
+   * @var string
+   */
   private $template;
 
+  /**
+   * get template file and contents.
+   * @param string $templatename template name
+   */
   public function __construct($templatename) {
     $templatefile = dirname(__DIR__) . '/templates/' . $templatename . '.tpl';
     $this->template = file_get_contents($templatefile);
@@ -24,15 +32,15 @@ class Template {
 
   /**
    * Replace a pattern containing "%%key%%" token.
-   * @param  string  $pattern    pattern
-   * @param  array   $values     key value pairs for replacement
-   * @param  string  $start      replacement marker start (default %%)
-   * @param  string  $end        replacement marker end (default %%)
-   * @param  boolean $encodeHtml strip html tags?
+   * @param  string $pattern    pattern
+   * @param  array  $values     key value pairs for replacement
+   * @param  string $start      replacement marker start (default %%)
+   * @param  string $end        replacement marker end (default %%)
+   * @param  bool   $encodeHtml strip html tags?
    * @return string replaced pattern
    */
   private function replacePattern($pattern, $values, $start = '%%', $end = '%%',
-                                        $encodeHtml = false) {
+                                  $encodeHtml = false) {
     $search = array();
     $replace = array();
     foreach ($values as $key => $value) {
