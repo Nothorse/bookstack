@@ -7,6 +7,10 @@ require_once(dirname(__DIR__) . "/config.php");
  */
 class Library{
 
+  /**
+   * database sqlite file
+   * @var \SQLite3;
+   */
   private $db;
 
   public function __construct($db = null) {
@@ -99,12 +103,12 @@ class Library{
                                md5id,
                                added)
                                values
-                   ('".SQLite3::escapeString($ebook->title)."',
-                    '".SQLite3::escapeString($ebook->author)."',
-                    '".SQLite3::escapeString($ebook->sortauthor)."',
-                    '".SQLite3::escapeString($ebook->file)."',
-                    '".SQLite3::escapeString($ebook->summary)."',
-                    '".SQLite3::escapeString($ebook->id)."',
+                   ('".\SQLite3::escapeString($ebook->title)."',
+                    '".\SQLite3::escapeString($ebook->author)."',
+                    '".\SQLite3::escapeString($ebook->sortauthor)."',
+                    '".\SQLite3::escapeString($ebook->file)."',
+                    '".\SQLite3::escapeString($ebook->summary)."',
+                    '".\SQLite3::escapeString($ebook->id)."',
                     '".time()."')";
     $success = $this->db->exec($qry);
     $qry = "select * from books where md5id = '".$ebook->id."'";
@@ -114,7 +118,7 @@ class Library{
     $success = $success && $this->db->exec("DELETE FROM taggedbooks WHERE bookid = '$bookid'");
     if (empty($ebook->tags)) $ebook->tags[] = 'untagged';
     foreach($ebook->tags as $id => $tag) {
-      $tag = SQLite3::escapeString($tag);
+      $tag = \SQLite3::escapeString($tag);
       $qry = "select id from tags where tag = '$tag'";
       $tagid = $this->db->querySingle($qry);
       if (!$tagid) {
@@ -131,11 +135,11 @@ class Library{
    */
   public function updateBook($ebook) {
     $qry = "update books
-              SET  title = '".SQLite3::escapeString($ebook->title)."',
-                  author = '".SQLite3::escapeString($ebook->author)."',
-              sortauthor = '".SQLite3::escapeString($ebook->sortauthor)."',
-                 summary = '".SQLite3::escapeString($ebook->summary)."'
-             WHERE md5id = '".SQLite3::escapeString($ebook->id)."'";
+              SET  title = '".\SQLite3::escapeString($ebook->title)."',
+                  author = '".\SQLite3::escapeString($ebook->author)."',
+              sortauthor = '".\SQLite3::escapeString($ebook->sortauthor)."',
+                 summary = '".\SQLite3::escapeString($ebook->summary)."'
+             WHERE md5id = '".\SQLite3::escapeString($ebook->id)."'";
     $this->db->exec($qry);
     $qry = "select * from books where md5id = '".$ebook->id."'";
     $res = $this->db->query($qry);
@@ -157,7 +161,7 @@ class Library{
     $qry = "select * from books where md5id = '".$md5id."'";
     $res = $this->db->query($qry);
     $row = $res->fetcharray();
-    $book = new ebook();
+    $book = new Ebook();
     $book->title = $row['title'];
     $book->author = $row['author'];
     $book->sortauthor = $row['sortauthor'];
@@ -176,7 +180,7 @@ class Library{
     $res = $this->bookQuery($order, $where, $limit);
     $booklist = array();
     while ($row = $res->fetchArray()) {
-        $book = new ebook();
+        $book = new Ebook();
         $book->title = $row['title'];
         $book->author = $row['author'];
         $book->sortauthor = $row['sortauthor'];
@@ -251,7 +255,7 @@ class Library{
     $qry = "select * from books join taggedbooks on taggedbooks.bookid = books.id join tags on tags.id = taggedbooks.tagid where tag = '$tag' order by $order";
     $res = $this->db->query($qry);
     while ($row = $res->fetchArray()) {
-        $book = new ebook();
+        $book = new Ebook();
         $book->title = $row['title'];
         $book->author = $row['author'];
         $book->sortauthor = $row['sortauthor'];
@@ -265,7 +269,7 @@ class Library{
   }
 
   /**
-   * @param ebook $book
+   * @param Ebook $book
    */
   public function deleteBook($book) {
     $bookid = $this->db->querySingle('select id from books where md5id =\''.$book->id."'");
@@ -292,8 +296,13 @@ class Library{
     $this->db->exec("update books set summary = 'No summary' where summary = ''");
   }
 
+  /**
+   * get the md5id form the path
+   * @param  string $path path to epub
+   * @return string       md5id
+   */
   public function getBookIdByPath($path) {
-    $path = SQLite3::escapeString($path);
+    $path = \SQLite3::escapeString($path);
     $qry = "select id from books where file = '$path'";
     $bookid = $this->db->querySingle($qry);
     if (empty($bookid)) {
@@ -308,7 +317,7 @@ class Library{
    * @param string  $order order by
    * @param string  $where where clause
    * @param bool $limit limit
-   * @return SQLite3Result
+   * @return \SQLite3Result
    */
   protected function bookQuery($order, $where, $limit)
   {
@@ -329,9 +338,14 @@ class Library{
     return $res;
   }
 
+  /**
+   * logger into database.
+   * @param  string $msg log this
+   * @return bool        worked
+   */
   public function logThis($msg) {
      $query = "INSERT INTO activitylog (entry) VALUES ('" .
-       SQLite3::escapeString($msg) . "')";
+       \SQLite3::escapeString($msg) . "')";
      $this->db->exec($query);
   }
 }
