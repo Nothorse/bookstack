@@ -13,7 +13,7 @@ class Dispatcher {
   private $db;
 
   /**
-   * @var opdsdisplay
+   * @var BrowserDisplay
    */
   private $display;
 
@@ -27,7 +27,8 @@ class Dispatcher {
 
 
   /**
-   * @param $path
+   * handle all requests
+   * @param string $path request path
    */
   public function handleRequest($path) {
     $handler = 'handle'.$path[0];
@@ -101,7 +102,7 @@ class Dispatcher {
     setcookie('booksel', 'author', 0, '/');
     list($discard,$method, $author) = explode('/', $_SERVER['PATH_INFO']);
     setcookie('selval', $author, 0, '/');
-    $list = $db->getBookList('added desc', 'where author = \'' . SQLite3::escapeString($path[1]) . '\'');
+    $list = $db->getBookList('added desc', 'where author = \'' . \SQLite3::escapeString($path[1]) . '\'');
     $this->display->printHeader();
     $alist = $this->listdir_by_author($path, $db);
     $this->display->printAuthorList($alist, 'author', $author);
@@ -223,8 +224,8 @@ class Dispatcher {
   }
 
   /**
-   * @param $file
-   * @return mixed
+   * @param string $file filename
+   * @return string
    */
   public function getSuffix($file) {
     list($name, $suffix) = explode('.', $file);
@@ -243,9 +244,9 @@ class Dispatcher {
   }
 
   /**
-   * @param $path
-   * @param $db
-   * @return mixed
+   * @param string  $path request path
+   * @param Library $db   Library
+   * @return array
    */
   public function listdir_by_author($path, $db){
     return $db->getBooklist('sortauthor asc');

@@ -7,7 +7,7 @@ require __DIR__ . "/vendor/autoload.php";
 
 /**
  * Command line script ot add book
- * 
+ *
  */
 class AddBook extends CommandLine {
 
@@ -31,7 +31,7 @@ class AddBook extends CommandLine {
     $log = __DIR__ . "/tmp/ebooklib.log";
     $file = $this->getArgument('FILE');
     $lib = new Library();
-    $lib->logThis("add $file\n");
+    $lib->logThis("Adding $file\n");
     if($file && file_exists($file) && strpos($file, '.epub') > 0) {
       $book = new Ebook($file);
       $book->file = $book->cleanupFile($file);
@@ -39,7 +39,7 @@ class AddBook extends CommandLine {
       //$growl .= " -n 'Giles (Ebooklib)' ";
       $growl = str_ireplace(array("'", '"', ';'), '', $book->title) . " by " . $book->author;
       $lib->insertBook($book);
-      $lib->logThis("Added book $growl (" . $book->getFullFilePath());
+      $lib->logThis("Added book $growl (" . $book->getFullFilePath() . ')');
       return true;
     } else {
       echo "No ebook given.\n";

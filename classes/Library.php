@@ -100,7 +100,8 @@ class Library{
             CREATE TABLE downloadqueue (
                 queueid INTEGER NOT NULL,
                 datestamp  TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                entry VARCHAR(255) NOT NULL
+                entry VARCHAR(255) NOT NULL,
+                done INTEGER DEFAULT 0 NOT NULL
                 )")
         ) exit ("Create SQLite Database Error\n");
     }
@@ -404,4 +405,32 @@ class Library{
        \SQLite3::escapeString($msg) . "')";
      $this->db->exec($query);
   }
+
+  /**
+   * add a queued download into database.
+   * @param  string $url log this
+   * @return bool        worked
+   */
+  public function queueThis($url) {
+     $query = "INSERT INTO downloadqueue (entry) VALUES ('" .
+       \SQLite3::escapeString($url) . "')";
+     return $this->db->exec($query);
+  }
+
+  /**
+   * get last 20 log entries by default.
+   * @param  int    $limit limit
+   * @return array         array datestamp=>logentry
+   */
+  public function getLastLog($limit = 20) {
+    $qry = "select datestamp, entry from activitylog order by datestamp desc";
+    $qry .= ($limit) ? " limit 30" : '';
+    $loglines = $this->db->query($qry);
+    $result = [];
+    while ($row = $loglines->fetchArray()) {
+      $result[] = $row;
+    }
+    return $result;
+  }
+
 }
