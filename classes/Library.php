@@ -13,6 +13,10 @@ class Library{
    */
   private $db;
 
+  /**
+   * constructor with optional db name.
+   * @param string $db name of db file
+   */
   public function __construct($db = null) {
     global $debug;
     if (!$db) {
@@ -24,7 +28,11 @@ class Library{
     $debug['library startup'] = microtime(true) - $time;
   }
 
-
+  /**
+   * open sqlite database
+   * @param  string $dbname db file name
+   * @return \SQLite3       sqlite object
+   */
   private function getdb($dbname = "library.sqlite") {
     $base= new \SQLite3($dbname);
     if (!$base)
@@ -38,6 +46,10 @@ class Library{
     }
   }
 
+  /**
+   * utility method to create or modify all sqlite tables.
+   * @return bool result
+   */
   private function checkTables() {
     $q=$this->db->query("PRAGMA table_info(books)");
     if ($q->fetchArray() < 1) {
@@ -94,6 +106,11 @@ class Library{
     }
   }
 
+  /**
+   * insert metadata of book into db
+   * @param  Ebook $ebook ebook
+   * @return bool|int     success or error
+   */
   public function insertBook($ebook) {
     $qry = "insert or replace into books (title,
                                author,
@@ -157,6 +174,11 @@ class Library{
     }
   }
 
+  /**
+   * get basic metadata for specific book identified by md5id
+   * @param  string $md5id md5id of book
+   * @return Ebook         Ebook with basic metadata
+   */
   public function getBook($md5id) {
     $qry = "select * from books where md5id = '".$md5id."'";
     $res = $this->db->query($qry);
@@ -176,6 +198,13 @@ class Library{
     return $book;
   }
 
+  /**
+   * get list of books
+   * @param  string $order order by
+   * @param  string $where where term
+   * @param  bool   $limit limit
+   * @return array         books
+   */
   public function getBooklist($order = 'added desc', $where = '', $limit = false) {
     $res = $this->bookQuery($order, $where, $limit);
     $booklist = array();
@@ -194,6 +223,13 @@ class Library{
     return $booklist;
   }
 
+  /**
+   * get a book array from a query
+   * @param  string $order order by
+   * @param  string $where where term
+   * @param  bool   $limit use a limit
+   * @return array        book array
+   */
   public function getBookarray($order = 'added desc', $where = '', $limit = false) {
     global $debug;
     $res = $this->bookQuery($order, $where, $limit);
@@ -217,6 +253,11 @@ class Library{
 
   }
 
+  /**
+   * get list of authors
+   * @param  string $order order by
+   * @return array         name, books
+   */
   public function getAuthorlist($order = 'sortauthor asc') {
     $booklist = array();
     $qry = "select author, title, sortauthor from books order by $order";
@@ -230,6 +271,11 @@ class Library{
     return $booklist;
   }
 
+  /**
+   * get list of tags
+   * @param  bool $updatedtags including update date tags
+   * @return array                array of books
+   */
   public function getTagList($updatedtags = true) {
     $time = microtime(true);
     $booklist = array();
@@ -250,6 +296,12 @@ class Library{
     return $booklist;
   }
 
+  /**
+   * query to get books tagged with $tag
+   * @param  string $tag   tag name
+   * @param  string $order order by
+   * @return array         array of books
+   */
   public function getTaggedBooks($tag, $order = 'added desc') {
     $booklist = array();
     $qry = "select * from books join taggedbooks on taggedbooks.bookid = books.id join tags on tags.id = taggedbooks.tagid where tag = '$tag' order by $order";
@@ -278,6 +330,10 @@ class Library{
     rename(dirname($book->getFullFilePath()), TRASH .basename(dirname($book->file)));
   }
 
+  /**
+   * fix tags, if untagged
+   * @return void no return
+   */
   public function fixTags() {
     $untagged = "select id from tags where tag = 'untagged'";
     $tagexists = $this->db->querySingle($untagged);
