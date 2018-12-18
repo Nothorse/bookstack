@@ -9,6 +9,21 @@
 <body>
 <?php
 require_once(__DIR__ . "/config.php");
+require __DIR__ . "/vendor/autoload.php";
+use EBookLib\Library as Library;
+  /**
+   * [printLog description]
+   * @param [type] $lastlog [description]
+   */
+  function printLog($lastlog) {
+    echo "<table>";
+    foreach ($lastlog as $key => $value) {
+      echo "<tr>";
+      echo "<td>" . $value['datestamp'] . "</td><td>" . $value['entry'] . "</td>";
+      echo "</tr>";
+    }
+    echo "</table>";
+  }
 /**
  * addDownload.php
  *
@@ -28,19 +43,21 @@ EOF;
 $file = __DIR__ . '/tmp/ebooklib.log';
 $log = `tail -n 10 $file`;
 
+$library = new Library();
 if (isset($_POST['url'])) {
   $url = $_POST['url'];
   echo (!isset($_POST['nohtml'])) ? "Accepted URL " . $url . " for download.<hr />" :'';
-  error_log("Download queued for URL $url\n", 3, $file);
-  $queuefile = __DIR__ . '/tmp/download_queued';
-  $res = file_put_contents($queuefile, $url);
-  chmod($queuefile, 0666);
+  $library->logThis("Download queued for URL $url\n");
+  $library->queueThis($url);
+  $lastlog = $library->getLastLog();
   echo (!isset($_POST['nohtml'])) ? "Current log:<br>" :'';
-  echo (!isset($_POST['nohtml'])) ? nl2br($log) :'';
+  printLog($lastlog);
   echo (isset($_POST['nohtml'])) ? 'success' : '';
 } else {
+  $lastlog = $library->getLastLog();
   echo (!isset($_POST['nohtml'])) ? "Current Log: <br/>" :'';
-  echo (!isset($_POST['nohtml'])) ? nl2br($log) :'';
+  printLog($lastlog);
+
 }
 ?>
 </body></html>
