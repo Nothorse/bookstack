@@ -1,7 +1,21 @@
 {
-  "autoload": {
-    "psr-4": {
-      "EBookLib\\":"classes/"
-    }
-  }
+    "name": "thgrendel/ebook-lib",
+    "description": "Ebook Library with tagging and download support (works best with fanficfare)",
+    "type": "project",
+    "autoload": {
+      "psr-4": {
+        "EBookLib\\":"classes/"
+      }
+    },
+    "require": {
+        "ulrichsg/getopt-php": "^3.2"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "TH",
+            "email": "th@grendel.at"
+        }
+    ],
+    "minimum-stability": "beta"
 }

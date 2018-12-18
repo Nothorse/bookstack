@@ -54,7 +54,7 @@ class Ebook extends MetaBook {
    */
   public function get_meta($epub = null) {
     $filepath = ($epub) ?: $this->getFullFilePath();
-    $zip = new ZipArchive;
+    $zip = new \ZipArchive;
 
     if ($zip->open($filepath)===TRUE){
       $container = simplexml_load_string($zip->getFromName(Ebook::CONTAINER));
@@ -80,7 +80,7 @@ class Ebook extends MetaBook {
       $this->create_id();
       // test with DOM
 
-      $dom = new DomDocument();
+      $dom = new \DomDocument();
       $dom->loadXML($zip->getFromName($rootfile));
       $meta = $dom->getElementsByTagName('metadata')->item(0);
       $this->title = $meta->getElementsByTagName('title')->item(0)->nodeValue;
@@ -121,7 +121,7 @@ class Ebook extends MetaBook {
           $this->spine[$node->getAttribute('idref')] = $this->manifest[$node->getAttribute('idref')];
       }
       // toc
-      $toc = new DomDocument();
+      $toc = new \DomDocument();
       $toc->loadXML($zip->getFromName($this->path.$this->manifest['ncx']));
       $navlist = $toc->getElementsByTagName('navPoint');
       foreach($navlist as $id => $navpoint) {
@@ -152,7 +152,7 @@ class Ebook extends MetaBook {
 
   /**
    * @param $zip
-   * @return SimpleXMLElement
+   * @return \SimpleXMLElement
    */
   public function get_metafile($zip) {
       $container = simplexml_load_string($zip->getFromName(Ebook::CONTAINER));
@@ -193,7 +193,7 @@ class Ebook extends MetaBook {
     }
     #print_r($this);
     if (isset($chapter)){
-      $zip = new ZipArchive;
+      $zip = new \ZipArchive;
       if ($zip->open($this->getFullFilePath())===TRUE){
         $html = $zip->getFromName($this->path.$chapter);
       }
@@ -210,7 +210,7 @@ class Ebook extends MetaBook {
    */
   public function getCover($binary = false) {
     $coverpath = $this->manifest[$this->otherMeta['cover']];
-    $zip = new ZipArchive;
+    $zip = new \ZipArchive;
     if ($zip->open($this->getFullFilePath())===TRUE){
       $cover = $zip->getFromName($this->path.$coverpath);
     }
@@ -300,7 +300,7 @@ class Ebook extends MetaBook {
    * @return string
    */
   public function modify_meta() {
-    $zip = new ZipArchive;
+    $zip = new \ZipArchive;
     if ($zip->open($this->file) === TRUE) {
       $fileToModify = $this->get_metafile($zip);
       //Read contents into memory
