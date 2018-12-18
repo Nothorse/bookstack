@@ -1,7 +1,7 @@
 <?php
 define('USER', 'thomas');
 define('TRASH', '/Users/thomas/.Trash/');
-define('BASEDIR', '/Users/thomas/Books');
+define('BASEDIR', '/Users/thomas/Bookstest');
 define('BASEURL', '/index.php');
 define('ODPS', 9999);
 define('HTML', 8080);

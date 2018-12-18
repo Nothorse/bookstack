@@ -1,21 +1,21 @@
 #!/usr/bin/php
 <?php
+namespace EBookLib;
 //ini_set('register_argc_argv', 'On');
 // ini_set('display_errors', '0');     # don't show any errors...
 //error_reporting(E_ALL | E_STRICT);
 define('SHELL', true);
 require_once(__DIR__ . "/config.php");
-require "vendor/autoload.php";
+require __DIR__ . "/vendor/autoload.php";
 /**
  * Needs to manually require the parent class, as it is called outside the weblication framework
  */
-$path = '/usr/lib/php/pear';
+#$path = '/usr/lib/php/pear';
 
-set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+#set_include_path(get_include_path() . PATH_SEPARATOR . $path);
 
 class AddBook extends CommandLine {
 
-  use EbookLib;
   /**
    * initParams -- Defining all parameters
    */

@@ -1,7 +1,9 @@
 <?php
-require __DIR__ . '/lib/vendor/autoload.php';
-use Ulrichsg\Getopt\Getopt;
-use Ulrichsg\Getopt\Option;
+namespace EBookLib;
+//require dirname(__DIR__ . '/lib/vendor/autoload.php';
+use GetOpt\GetOpt as GetOpt;
+use GetOpt\Option;
+use GetOpt\Arguments;
 
 /**
  * Complete command line base class.
@@ -183,7 +185,7 @@ abstract class CommandLine {
     if ($quiet) {
       $help = $quiet;
     }
-    $argreq = (strpos($param[0], ':') > 1) ? Getopt::REQUIRED_ARGUMENT : Getopt::NO_ARGUMENT;
+    $argreq = (strpos($param[0], ':') > 1) ? GetOpt::REQUIRED_ARGUMENT : GetOpt::NO_ARGUMENT;
     $short = (strlen(trim($param[0],':-')) == 1) ? trim($param[0],':-') : null;
     $long = (isset($param[1])) ? trim($param[1], ':-') : null;
     if (!$long) {
@@ -230,12 +232,12 @@ abstract class CommandLine {
 
   /**
    * getArgs -- used in the constructor to gather the commandline flags and options.
-   * Uses Console_Getopt.
+   * Uses Console_GetOpt.
    *
    * @return array
    */
   private function getArgs() {
-    $getopt = new Getopt($this->structparams);
+    $getopt = new GetOpt($this->structparams);
     $getopt->parse();
     $args = $getopt->getOptions();
     return $args;
