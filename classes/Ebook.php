@@ -5,30 +5,43 @@ namespace EBookLib;
  */
 class Ebook extends MetaBook {
   /**
-   * path ot container
+   * path of container
+   * @var string
    */
   const CONTAINER = 'META-INF/container.xml';
+
   /**
-   * @var DOMDocument
+   * full meta xml
+   * @var \DOMDocument
    */
   public $allmeta;
+
   /**
+   * Manifest
    * @var array
    */
   public $manifest = [];
+
   /**
+   * table of contents
    * @var array
    */
   public $toc = [];
+
   /**
+   * Spine (all files)
    * @var array
    */
   public $spine = [];
+
   /**
+   * misc meta
    * @var array
    */
   public $otherMeta = [];
+
   /**
+   * lookup reverse meta
    * @var array
    */
   public $lookup = [];
@@ -36,7 +49,7 @@ class Ebook extends MetaBook {
 
   /**
    * ebook constructor.
-   * @param null $epub
+   * @param string $epub epub file
    */
   public function __construct($epub = null) {
     if (file_exists($epub)) {
@@ -80,7 +93,7 @@ class Ebook extends MetaBook {
       $this->create_id();
       // test with DOM
 
-      $dom = new \DomDocument();
+      $dom = new \DOMDocument();
       $dom->loadXML($zip->getFromName($rootfile));
       $meta = $dom->getElementsByTagName('metadata')->item(0);
       $this->title = $meta->getElementsByTagName('title')->item(0)->nodeValue;
@@ -121,7 +134,7 @@ class Ebook extends MetaBook {
           $this->spine[$node->getAttribute('idref')] = $this->manifest[$node->getAttribute('idref')];
       }
       // toc
-      $toc = new \DomDocument();
+      $toc = new \DOMDocument();
       $toc->loadXML($zip->getFromName($this->path.$this->manifest['ncx']));
       $navlist = $toc->getElementsByTagName('navPoint');
       foreach($navlist as $id => $navpoint) {
@@ -138,7 +151,7 @@ class Ebook extends MetaBook {
   }
 
   /**
-   * @param $dom
+   * @param  \DOMDocument $dom
    * @return mixed
    */
   public function prettyprint($dom) {
@@ -151,7 +164,7 @@ class Ebook extends MetaBook {
   }
 
   /**
-   * @param $zip
+   * @param  \ZipArchive $zip
    * @return \SimpleXMLElement
    */
   public function get_metafile($zip) {
@@ -161,8 +174,8 @@ class Ebook extends MetaBook {
   }
 
   /**
-   * @param null $epub
-   * @param string $bookdir
+   * @param  string $epub epub file
+   * @param  string $bookdir base dir
    * @return mixed|null|string
    */
   public function cleanupFile($epub = null, $bookdir = BASEDIR) {
@@ -182,8 +195,9 @@ class Ebook extends MetaBook {
   }
 
   /**
-   * @param $idref
-   * @return mixed
+   * get chapter from id.
+   * @param  string $idref id in toc
+   * @return string
    */
   public function getChapter($idref) {
     foreach($this->manifest as $id => $href) {
@@ -191,7 +205,6 @@ class Ebook extends MetaBook {
         $chapter = $href;
       }
     }
-    #print_r($this);
     if (isset($chapter)){
       $zip = new \ZipArchive;
       if ($zip->open($this->getFullFilePath())===TRUE){
@@ -210,7 +223,7 @@ class Ebook extends MetaBook {
    */
   public function getCover($binary = false) {
     $coverpath = $this->manifest[$this->otherMeta['cover']];
-    $zip = new \ZipArchive;
+    $zip = new \ZipArchive();
     if ($zip->open($this->getFullFilePath())===TRUE){
       $cover = $zip->getFromName($this->path.$coverpath);
     }
@@ -221,8 +234,9 @@ class Ebook extends MetaBook {
   }
 
   /**
-   * @param $html
-   * @param $chapter
+   * Inject navigation links into chapter text
+   * @param  string $html
+   * @param  string $chapter
    * @return mixed
    */
   public function injectNavigation($html, $chapter) {
@@ -233,23 +247,23 @@ class Ebook extends MetaBook {
   }
 
   /**
-   * @param $html
-   * @return mixed
+   * @param  string $html
+   * @return string
    */
   public function injectStyle($html) {
     return str_replace('</head>', '<link rel="stylesheet" href="/rsrc/ui.css" type="text/css" media="all" /></head>', $html);
   }
 
   /**
-   * @param $html
-   * @return mixed
+   * @param  string $html html code
+   * @return string
    */
   public function injectBooktitle($html) {
     return str_replace('<title>', '<title>'.$this->title.' - ', $html);
   }
 
   /**
-   * @param string $baseurl
+   * @param  string $baseurl base
    * @return string
    */
   public function getFormattedToc($baseurl = '/index.php') {
@@ -262,8 +276,8 @@ class Ebook extends MetaBook {
   }
 
   /**
-   * @param $currenthref
-   * @param string $baseurl
+   * @param string $currenthref current url
+   * @param string $baseurl     base url
    * @return string
    */
   public function getNextPrev($currenthref, $baseurl = '/index.php') {
@@ -338,20 +352,11 @@ class Ebook extends MetaBook {
   }
 
   /**
-   * @param $string
-   * @return mixed
+   * @param  string $string string to saniize
+   * @return string
    */
   public function sanitize($string) {
     return str_replace(['/', ',', ';'], ['_', '_'], $string);
-      //return ereg_replace('[^A-Za-z0-9- ]', '', $string);
-  }
-
-  /**
-   * @param $key
-   * @param $val
-   */
-  public function edit_book($key, $val) {
-
   }
 
 }

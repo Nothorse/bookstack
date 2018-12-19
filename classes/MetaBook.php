@@ -28,7 +28,9 @@ class MetaBook {
    * @var string
    */
   public $path;
+
   /**
+   * Path of file without basedir
    * @var string
    */
   public $file;
@@ -37,7 +39,7 @@ class MetaBook {
    */
   public $tags;
   /**
-   * @var DateTime
+   * @var \DateTime
    */
   public $updated;
 
