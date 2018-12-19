@@ -4,6 +4,7 @@ define('BASEDIR', '<path>');
 define('BASEURL', '/index.php');
 define('ODPS', 9999);
 define('HTML', 8080);
+define('FFF', "/path/to/fanficfare");
 if(!SHELL) {
 if(substr($_SERVER['HTTP_HOST'], strlen($_SERVER['SERVER_PORT'])*-1) == $_SERVER['SERVER_PORT']) {
   define('SERVER', $_SERVER['HTTP_HOST']);
