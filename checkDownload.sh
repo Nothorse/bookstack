@@ -3,8 +3,6 @@
 SCRIPT=$(readlink -f "$0")
 # Absolute path this script is in, thus /home/user/bin
 SCRIPTPATH=$(dirname "$SCRIPT")
-QFILE=${SCRIPTPATH}/tmp/download_queued
-LOGFILE=${SCRIPTPATH}/tmp/ebooklib.log
 #echo $QFILE $LOGFILE
 DL=`which fanficfare`
 if [ -f $QFILE ]; then

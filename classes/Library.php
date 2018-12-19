@@ -98,7 +98,7 @@ class Library{
     if ($q->fetchArray() < 1) {
         if (!$this->db->exec("
             CREATE TABLE downloadqueue (
-                queueid INTEGER NOT NULL,
+                queueid INTEGER NOT NULL PRIMARY KEY,
                 datestamp  TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
                 entry VARCHAR(255) NOT NULL,
                 done INTEGER DEFAULT 0 NOT NULL
@@ -431,6 +431,27 @@ class Library{
       $result[] = $row;
     }
     return $result;
+  }
+
+  /**
+   * get current queue.
+   * @return string url/filepath
+   */
+  public function getQueue() {
+    $query = "SELECT entry FROM downloadqueue WHERE done = 0 ";
+    $query .= "ORDER BY datestamp LIMIT 1";
+    $res = $this->db->querySingle($query);
+    return ($res) ? $res : false;
+  }
+
+  /**
+   * set an entry to done after passing it to fanficfare
+   * @param string $entry url or path
+   * @return bool success
+   */
+  public function setQueueEntryDone($entry) {
+    $query = "UPDATE downloadqueue SET done = 1 where entry = '$entry'";
+    return $this->db->exec($query);
   }
 
 }
