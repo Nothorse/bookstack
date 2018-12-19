@@ -3,7 +3,6 @@ namespace EBookLib;
 //require dirname(__DIR__ . '/lib/vendor/autoload.php';
 use GetOpt\GetOpt as GetOpt;
 use GetOpt\Option;
-use GetOpt\Arguments;
 
 /**
  * Complete command line base class.
@@ -21,9 +20,7 @@ use GetOpt\Arguments;
  * !!: parameters are discarded.
  *
  * @author    Thomas Hassan <t.hassan@intevo.net>
- * @package   framework
  * @copyright intevo.websolutions gmbh, 2010
- * @version   $Id$
  */
 abstract class CommandLine {
 
@@ -34,6 +31,13 @@ abstract class CommandLine {
    * @var array
    */
   private $params;
+
+  /**
+   * Parameters and helptext
+   * ([parameter] => ([varname] => [helptext]))
+   *
+   * @var array
+   */
   private $structparams;
 
   /**
@@ -174,11 +178,11 @@ abstract class CommandLine {
    * addParam -- Adds the parameter definitions.
    * If a flag expects data, postfix it with ':' short opts and '=' for long opts.
    *
-   * @param  string  $param    commandline parameter,
-   *                           both long and short options are possible, seperated by comma.
-   * @param  string  $varname  name of option in args -- Should be in CAPS by convention.
-   * @param  string  $help     helpstring.
-   * @param  boolean $quiet    Don't add param to help, add it only for compatability.
+   * @param  string $param    commandline parameter,
+   *                          both long and short options are possible, seperated by comma.
+   * @param  string $varname  name of option in args -- Should be in CAPS by convention.
+   * @param  string $help     helpstring.
+   * @param  bool   $quiet    Don't add param to help, add it only for compatability.
    * @return void
    */
   protected function addParam($param, $varname, $help, $quiet = false) {
