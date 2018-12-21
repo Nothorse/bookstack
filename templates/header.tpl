@@ -51,6 +51,9 @@
            autosave='filtersearch' onkeyup="filterList()" onblur="filterList()" onmouseup="filterList()"
            placeholder="filter" />
     <ul>
+      <li class="category">
+          <a href="%%self%%">🔝</a>
+      </li>
         <li class="category">
             <a href="%%self%%?sort=date">Date</a>
         </li>

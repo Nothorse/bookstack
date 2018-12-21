@@ -169,6 +169,7 @@ class Dispatcher {
   public function handlerefresh($db, $path) {
     $book = $db->getBook($path[1]);
     $db->queueThis($book->getFullFilePath());
+    $db->logThis("Update " . $book->title);
     $type = (isset($_COOKIE['booksel']))? $_COOKIE['booksel'] : 'author';
     $current = (isset($_COOKIE['selval']))? $_COOKIE['selval'] : $book->author;
     setcookie('booksel', '');
