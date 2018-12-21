@@ -9,5 +9,6 @@
         <span class="dl-link"><a href="%%finder%%">Show</a></span>
         <span class="dl-link"><a href="%%editurl%%">Edit Metadata</a></span>
         <span class="dl-link"><a href="%%deleteurl%%">Delete Book</a></span>
+        <span class="dl-link"><a href="%%refreshurl%%">Update Book</a></span>
     </p>
 </div>

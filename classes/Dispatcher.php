@@ -162,6 +162,25 @@ class Dispatcher {
     exit;
   }
 
+  /**
+   * @param Library $db   library
+   * @param string  $path path
+   */
+  public function handlerefresh($db, $path) {
+    $book = $db->getBook($path[1]);
+    $db->queueThis($book->getFullFilePath());
+    $type = (isset($_COOKIE['booksel']))? $_COOKIE['booksel'] : 'author';
+    $current = (isset($_COOKIE['selval']))? $_COOKIE['selval'] : $book->author;
+    setcookie('booksel', '');
+    setcookie('selval', '');
+    $list = ($type == 'tag') ? $db->getTagList() : $db->getAuthorlist();
+    $this->display->printHeader();
+    $book->get_meta();
+    echo $this->display->showDetails($book);
+    $this->display->printFoot();
+    exit;
+  }
+
     /**
      * @param Library $db   library
      * @param string  $path path
