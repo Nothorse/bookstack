@@ -439,7 +439,7 @@ class Library{
    */
   public function getQueue() {
     $query = "SELECT entry FROM downloadqueue WHERE done = 0 ";
-    $query .= "ORDER BY datestamp LIMIT 1";
+    $query .= "ORDER BY datestamp desc LIMIT 1";
     $res = $this->db->querySingle($query);
     return ($res) ? $res : false;
   }
