@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <title>TH's Library Devel</title>
+    <title>Ebook Library</title>
     <script src="/rsrc/jquery.js" type="text/javascript" language="javascript" charset="utf-8"></script>
     <script>
         function reload() {
