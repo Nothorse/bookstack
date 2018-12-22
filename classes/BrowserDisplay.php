@@ -196,6 +196,20 @@ EOT;
     echo $foot;
     global $debug;
     $debug['Rendertime'] = microtime(true) - $time;
+  }
+
+  /**
+   * Print the log.
+   */
+  public function printLog($log) {
+    echo "<table>";
+    foreach ($log as $key => $value) {
+      echo "<tr>";
+      echo "<td class='date'>" . $value['datestamp'];
+      echo "</td><td class='booktitle'>" . $value['entry'] . "</td>";
+      echo "</tr>";
     }
+    echo "</table>";
+  }
 
 }
