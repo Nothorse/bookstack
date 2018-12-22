@@ -69,6 +69,8 @@
         <li class="category">
             <a href="%%self%%?sort=list">Lists</a>
         </li>
+        <li class="category">
+            <a href="%%self%%/add/">Add/Log</a>
+        </li>
     </ul>
-    <div id="showhidedl" style="float:right;" onclick="$('#downloader').slideToggle()">➕</div>
 </div>

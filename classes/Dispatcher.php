@@ -10,7 +10,7 @@ class Dispatcher {
   /**
    * @var Library
    */
-  private $db;
+  private $library;
 
   /**
    * @var BrowserDisplay
@@ -21,7 +21,7 @@ class Dispatcher {
    * Dispatcher constructor.
    */
   public function __construct() {
-    $this->db = new Library();
+    $this->library = new Library();
     $this->display = new BrowserDisplay();
   }
 
@@ -32,15 +32,15 @@ class Dispatcher {
    */
   public function handleRequest($path) {
     $handler = 'handle'.$path[0];
-    $this->$handler($this->db, $path);
+    $this->$handler($this->library, $path);
   }
 
   /**
    * handler
-   * @param Library $db   libray
+   * @param Library $library   libray
    * @param string  $path path
    */
-  public function handle($db, $path) {
+  public function handle($library, $path) {
     setcookie('booksel', '');
     setcookie('selval', '');
     header("X-Clacks-Overhead: GNU Terry Pratchett");
@@ -48,38 +48,38 @@ class Dispatcher {
     $sort = (isset($_GET['sort'])) ? $_GET['sort'] : 'index';
     switch ($sort) {
       case 'name':
-        $list = $this->listdir_by_name($path, $db);
+        $list = $this->listdir_by_name($path, $library);
         $this->display->printBookList($list, 'bookswide');
         break;
       case 'author':
-        $list = $this->listdir_by_author($path, $db);
+        $list = $this->listdir_by_author($path, $library);
         $this->display->printBookList($list, 'bookswide');
         break;
       case 'date':
-        $list = $this->listdir_by_date($path, $db);
+        $list = $this->listdir_by_date($path, $library);
         $this->display->printBookList($list, 'bookswide');
         break;
       case 'tags':
-        $list = $db->getTagList(false);
+        $list = $library->getTagList(false);
         $this->display->printAuthorList($list, 'tag');
         break;
       case 'recent':
-        $list = $this->listdir_by_date($path, $db);
+        $list = $this->listdir_by_date($path, $library);
         $this->display->printBookList($list, 'bookswide');
         break;
       default:
-        $list = $this->listdir_by_date($path, $db, 20);
+        $list = $this->listdir_by_date($path, $library, 20);
         $this->display->printBookList($list, 'bookswide');
     }
     $this->display->printFooter();
   }
 
   /**
-   * @param Library $db   library
+   * @param Library $library   library
    * @param string  $path path
    */
-  public function handleget($db, $path) {
-    $book = $db->getBook($path[1]);
+  public function handleget($library, $path) {
+    $book = $library->getBook($path[1]);
     #print_r($book);
     header("Content-Type: application/epub");
     echo file_get_contents($book->getFullFilePath());
@@ -90,21 +90,21 @@ class Dispatcher {
    *
    */
   public function handlefixtags() {
-      $this->db->fixTags();
+      $this->library->fixTags();
       $this->display->debug('fix tags');
   }
 
   /**
-   * @param Library $db   library
+   * @param Library $library   library
    * @param string  $path path
    */
-  public function handleauthor($db, $path) {
+  public function handleauthor($library, $path) {
     setcookie('booksel', 'author', 0, '/');
     list($discard,$method, $author) = explode('/', $_SERVER['PATH_INFO']);
     setcookie('selval', $author, 0, '/');
-    $list = $db->getBookList('added desc', 'where author = \'' . \SQLite3::escapeString($path[1]) . '\'');
+    $list = $library->getBookList('added desc', 'where author = \'' . \SQLite3::escapeString($path[1]) . '\'');
     $this->display->printHeader();
-    $alist = $this->listdir_by_author($path, $db);
+    $alist = $this->listdir_by_author($path, $library);
     $this->display->printAuthorList($alist, 'author', $author);
     if ($author) $this->display->printBookList($list, 'books');
     $this->display->printFoot();
@@ -112,15 +112,15 @@ class Dispatcher {
   }
 
   /**
-   * @param Library $db   library
+   * @param Library $library   library
    * @param string  $path path
    */
-  public function handletag($db, $path) {
+  public function handletag($library, $path) {
     setcookie('booksel', 'tag', 0, '/');
     setcookie('selval', $path[1], 0, '/');
-    $list = $db->getTaggedBooks($path[1]);
+    $list = $library->getTaggedBooks($path[1]);
     $this->display->printHeader();
-    $alist = $db->getTagList(false);
+    $alist = $library->getTagList(false);
     $this->display->printAuthorList($alist, 'tag', $path[1]);
     if ($path[1]) $this->display->printBookList($list, 'books');
     $this->display->printFoot();
@@ -128,11 +128,11 @@ class Dispatcher {
   }
 
   /**
-   * @param Library $db   library
+   * @param Library $library   library
    * @param string  $path path
    */
-  public function handlemeta($db, $path) {
-    $book = $db->getBook($path[1]);
+  public function handlemeta($library, $path) {
+    $book = $library->getBook($path[1]);
     $book->get_meta();
     header("Content-Type: text/plain");
     echo $newbook->allmeta->saveXML();
@@ -140,11 +140,11 @@ class Dispatcher {
   }
 
   /**
-   * @param Library $db   library
+   * @param Library $library   library
    * @param string  $path path
    */
-  public function handleshow($db, $path) {
-    $book = $db->getBook($path[1]);
+  public function handleshow($library, $path) {
+    $book = $library->getBook($path[1]);
     if($this->getproto() == 'epub') {
       header("Content-Type: application/epub");
       echo file_get_contents($book->getFullFilePath());
@@ -154,7 +154,7 @@ class Dispatcher {
     $current = (isset($_COOKIE['selval']))? $_COOKIE['selval'] : $book->author;
     setcookie('booksel', '');
     setcookie('selval', '');
-    $list = ($type == 'tag') ? $db->getTagList() : $db->getAuthorlist();
+    $list = ($type == 'tag') ? $library->getTagList() : $library->getAuthorlist();
     $this->display->printHeader();
     $book->get_meta();
     echo $this->display->showDetails($book);
@@ -163,18 +163,19 @@ class Dispatcher {
   }
 
   /**
-   * @param Library $db   library
+   * Handler for update requests.
+   * @param Library $library   library
    * @param string  $path path
    */
-  public function handlerefresh($db, $path) {
-    $book = $db->getBook($path[1]);
-    $db->queueThis($book->getFullFilePath());
-    $db->logThis("Update " . $book->title);
+  public function handlerefresh($library, $path) {
+    $book = $library->getBook($path[1]);
+    $library->queueThis($book->getFullFilePath());
+    $library->logThis("Update " . $book->title);
     $type = (isset($_COOKIE['booksel']))? $_COOKIE['booksel'] : 'author';
     $current = (isset($_COOKIE['selval']))? $_COOKIE['selval'] : $book->author;
     setcookie('booksel', '');
     setcookie('selval', '');
-    $list = ($type == 'tag') ? $db->getTagList() : $db->getAuthorlist();
+    $list = ($type == 'tag') ? $library->getTagList() : $library->getAuthorlist();
     $this->display->printHeader();
     $book->get_meta();
     echo $this->display->showDetails($book);
@@ -182,31 +183,54 @@ class Dispatcher {
     exit;
   }
 
-    /**
-     * @param Library $db   library
-     * @param string  $path path
-     */
-    public function handleedit($db, $path) {
-    $book = $db->getBook($path[1]);
-    $book->get_meta();
-    $book->id = $path[1];
-    $url = $_SERVER['PHP_SELF'];
+  /**
+   * Handler for download requests.
+   * @param Library $library   library
+   * @param string  $path path
+   */
+  public function handleadd($library, $path) {
+    $log = $library->getLastLog();
     $this->display->printHeader();
-    if (isset($_POST['editactive'])) {
-      $book->title = (isset($_POST['title'])) ? $_POST['title']:$book->title;
-      $book->author = (isset($_POST['author'])) ? $_POST['author']:$book->author;
-      $book->sortauthor = (isset($_POST['author'])) ? strtolower($_POST['author']):$book->sortauthor;
-      if (isset($_POST['tags'])) {
-        $tags = explode(',', $_POST['tags']);
-        $book->tags = array();
-        foreach($tags as $tag) {
-          $book->tags[] = trim($tag);
-        }
+    $tpl = new Template('downloadform');
+    echo "<div id='log'>";
+    echo $tpl->render([]);
+    if (isset($_POST['url'])) {
+      $url = $_POST['url'];
+      echo "Accepted URL " . $url . " for download.<hr />";
+      $library->logThis("Download queued for URL $url\n");
+      $library->queueThis($url);
+    }
+    echo "Last log entries:<br>";
+    $this->display->printLog($log);
+    echo "</div>";
+    $this->display->printFooter();
+  }
+
+  /**
+   * @param Library $library   library
+   * @param string  $path path
+   */
+  public function handleedit($library, $path) {
+  $book = $library->getBook($path[1]);
+  $book->get_meta();
+  $book->id = $path[1];
+  $url = $_SERVER['PHP_SELF'];
+  $this->display->printHeader();
+  if (isset($_POST['editactive'])) {
+    $book->title = (isset($_POST['title'])) ? $_POST['title']:$book->title;
+    $book->author = (isset($_POST['author'])) ? $_POST['author']:$book->author;
+    $book->sortauthor = (isset($_POST['author'])) ? strtolower($_POST['author']):$book->sortauthor;
+    if (isset($_POST['tags'])) {
+      $tags = explode(',', $_POST['tags']);
+      $book->tags = array();
+      foreach($tags as $tag) {
+        $book->tags[] = trim($tag);
       }
-      $book->summary = (isset($_POST['summary'])) ? $_POST['summary']:$book->summary;
-      $db->updateBook($book);
-      $res = $book->modify_meta();
-      //setcookie('editresult', $res);
+    }
+    $book->summary = (isset($_POST['summary'])) ? $_POST['summary']:$book->summary;
+    $library->updateBook($book);
+    $res = $book->modify_meta();
+    //setcookie('editresult', $res);
     } else {
       //setcookie('editresult', '');
     }
@@ -221,11 +245,11 @@ class Dispatcher {
   }
 
   /**
-   * @param Library $db   library
+   * @param Library $library   library
    * @param string  $path path
    */
-  public function handleread($db, $path) {
-    $book = $db->getBook($path[1]);
+  public function handleread($library, $path) {
+    $book = $library->getBook($path[1]);
     $book->get_meta();
     header("Content-type: text/html");
     echo $book->getChapter($path[2]);
@@ -233,12 +257,12 @@ class Dispatcher {
   }
 
   /**
-   * @param Library $db   library
+   * @param Library $library   library
    * @param string  $path path
    */
-  public function handledelete($db, $path) {
-    $book = $db->getBook($path[1]);
-    $db->deleteBook($book);
+  public function handledelete($library, $path) {
+    $book = $library->getBook($path[1]);
+    $library->deleteBook($book);
     header("Location: http://".SERVER.BASEURL);
     exit;
   }
@@ -255,30 +279,30 @@ class Dispatcher {
   /**
    * List books by date
    * @param  string  $path
-   * @param  Library $db
+   * @param  Library $library
    * @param  bool    $limit
    * @return mixed
    */
-  public function listdir_by_date($path, $db, $limit = false){
-    return $db->getBookarray('added desc', null, $limit);
+  public function listdir_by_date($path, $library, $limit = false){
+    return $library->getBookarray('added desc', null, $limit);
   }
 
   /**
    * @param string  $path request path
-   * @param Library $db   Library
+   * @param Library $library   Library
    * @return array
    */
-  public function listdir_by_author($path, $db){
-    return $db->getBooklist('sortauthor asc');
+  public function listdir_by_author($path, $library){
+    return $library->getBooklist('sortauthor asc');
   }
 
   /**
    * @param string  $path
-   * @param Library $db
+   * @param Library $library
    * @return mixed
    */
-  public function listdir_by_name($path, $db){
-    return $db->getBooklist('title asc');
+  public function listdir_by_name($path, $library){
+    return $library->getBooklist('title asc');
   }
 
   /**

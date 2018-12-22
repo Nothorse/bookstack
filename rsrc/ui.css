@@ -1,228 +1,318 @@
 body.normal {
-  font-family: "Lucida Grande"; }
-  body.normal a {
-    text-decoration: none;
-    font-family: "Lucida Grande";
-    font-weight: bold;
-    color: #333; }
-  body.normal #bluebar {
-    position: fixed;
-    width: 100%;
-    height: 40px;
-    color: #000;
-    background: #DADFE8;
-    list-style-position: inside;
-    font-family: "Lucida Grande";
-    font-size: 12px;
-    margin: 0;
-    padding: 0;
-    line-height: 20px;
-    border-bottom: 1px #111 solid;
-    overflow: auto; }
-    body.normal #bluebar .reloadbtn {
-      padding-left: 10px;
-      padding-top: 10px;
-      cursor: pointer;
-      font-size: 15pt;
-      float: left; }
-    body.normal #bluebar #showhidedl {
-      float: right;
-      width: 18px;
-      height: 18px;
-      text-align: center;
-      margin-right: 5px;
-      cursor: pointer;
-      font-size: 15pt; }
-    body.normal #bluebar ul {
-      list-style: none;
-      line-height: 10px;
-      font-size: 11px;
-      padding: 0 0 0 8px; }
-      body.normal #bluebar ul li.category {
-        text-transform: uppercase;
-        font-weight: bold;
-        font-size: 11px;
-        color: #29802e;
-        text-shadow: #F5F7F9 0 1px 0;
-        float: left;
-        margin-left: 10px; }
-    body.normal #bluebar a {
-      text-decoration: none;
-      color: #000;
-      display: block;
-      line-height: 20px;
-      height: 20px; }
-  body.normal input#myInput {
-    width: 130px;
-    margin-left: 10px;
-    margin-top: 10px;
-    float: left; }
-  body.normal .titlelink {
-    margin-left: 0;
-    color: #666; }
-  body.normal .titlelink.complete {
-    color: #000; }
-  body.normal #details {
-    position: absolute;
-    left: 0;
-    top: 40px;
-    right: 0;
-    bottom: 0;
-    padding: 20px;
-    overflow-x: hidden;
-    overflow-y: auto; }
-    body.normal #details h1 {
-      font-size: 1.3em;
-      font-weight: bold;
-      color: #333;
-      text-align: center; }
-    body.normal #details h2 {
-      font-size: 1.1em;
-      font-weight: bold;
-      color: #333;
-      text-align: center; }
-  body.normal #edit {
-    position: absolute;
-    left: 0;
-    top: 40px;
-    right: 0;
-    bottom: 0;
-    padding: 20px;
-    overflow-x: hidden;
-    overflow-y: auto; }
-  body.normal .toc {
-    float: right;
-    position: relative;
-    top: -19px;
-    right: -20px;
-    width: 250px;
-    border-left: 1px #ccc solid;
-    border-bottom: 1px #ccc solid;
-    font-size: 0.8em;
-    background-color: #ddd;
-    list-style-type: none;
-    margin: 0;
-    padding: 5px; }
-    body.normal .toc a {
-      display: block;
-      font-family: "Lucida Grande";
-      font-weight: bold;
-      text-decoration: none;
-      color: #999;
-      text-shadow: #F5F7F9 0 1px 0; }
-    body.normal .toc li {
-      list-style-type: none;
-      margin: 0;
-      padding: 5px; }
-  body.normal #list {
-    position: fixed;
-    height: 100%;
-    width: 300px;
-    left: 200px;
-    padding: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    border-right: 1px #111 solid; }
-    body.normal #list ul {
-      margin: 0;
-      padding: 0;
-      list-style-type: none; }
-      body.normal #list ul li {
-        margin: 0;
-        list-style-type: none;
-        width: 100%;
-        line-height: 1em;
-        font-size: 0.9em;
-        padding: 7px;
-        white-space: nowrap; }
-        body.normal #list ul li a {
-          display: inline-block; }
-  body.normal #downloader {
-    position: absolute;
-    top: 40px;
-    right: 5px;
-    width: 400px;
-    height: 350px;
-    display: none; }
-    body.normal #downloader iframe {
-      width: 400px;
-      height: 350px; }
-  body.normal #bookswide {
-    position: fixed;
-    height: 100%;
-    right: 0;
-    top: 40px;
-    left: 0;
-    padding: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    border-bottom: 1px #111 solid; }
-    body.normal #bookswide ul {
-      margin: 0;
-      padding: 0;
-      list-style-type: none; }
-      body.normal #bookswide ul li {
-        margin: 0;
-        list-style-type: none;
-        width: 100%;
-        line-height: 1em;
-        font-size: 0.9em;
-        padding: 7px;
-        white-space: nowrap; }
-        body.normal #bookswide ul li a {
-          display: inline-block; }
-        body.normal #bookswide ul li span.detailtoggle {
-          font-size: 10px;
-          display: inline-block;
-          visibility: hidden;
-          padding: 2px;
-          width: 12px; }
-        body.normal #bookswide ul li:hover span.detailtoggle {
-          visibility: visible; }
-    body.normal #bookswide .byline {
-      display: inline;
-      margin-left: 20px; }
-  body.normal #books {
-    position: fixed;
-    height: 100%;
-    right: 0;
-    top: 40px;
-    left: 0;
-    padding: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    border-bottom: 1px #111 solid; }
-    body.normal #books ul {
-      margin: 0;
-      padding: 0;
-      list-style-type: none; }
-      body.normal #books ul li {
-        margin: 0;
-        list-style-type: none;
-        width: 100%;
-        line-height: 1em;
-        font-size: 0.9em;
-        padding: 7px;
-        white-space: nowrap; }
-        body.normal #books ul li a {
-          display: inline-block; }
-  body.normal .dl-link {
-    background: #DADFE8;
-    padding: 3px;
-    -moz-border-radius: 2px;
-    border-radius: 2px;
-    margin-left: 3px;
-    font-size: 0.6em; }
-  body.normal div.summary {
-    margin-left: 130px;
-    font-size: 0.7em;
-    white-space: normal; }
-  body.normal .byline {
-    display: block;
-    font-size: 0.8em;
-    font-weight: normal; }
-    body.normal .byline:before {
-      content: 'by '; }
+  font-family: "Lucida Grande";
+}
+
+body.normal a {
+  text-decoration: none;
+  font-family: "Lucida Grande";
+  font-weight: bold;
+  color: #333;
+}
+
+body.normal #bluebar {
+  position: fixed;
+  width: 100%;
+  height: 40px;
+  color: #000;
+  background: #DADFE8;
+  list-style-position: inside;
+  font-family: "Lucida Grande";
+  font-size: 12px;
+  margin: 0;
+  padding: 0;
+  line-height: 20px;
+  border-bottom: 1px #111 solid;
+  overflow: auto;
+}
+
+body.normal #bluebar .reloadbtn {
+  padding-left: 10px;
+  padding-top: 10px;
+  cursor: pointer;
+  font-size: 15pt;
+  float: left;
+}
+
+body.normal #bluebar #showhidedl {
+  float: right;
+  width: 18px;
+  height: 18px;
+  text-align: center;
+  margin-right: 5px;
+  cursor: pointer;
+  font-size: 15pt;
+}
+
+body.normal #bluebar ul {
+  list-style: none;
+  line-height: 10px;
+  font-size: 11px;
+  padding: 0 0 0 8px;
+}
+
+body.normal #bluebar ul li.category {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 11px;
+  color: #29802e;
+  text-shadow: #F5F7F9 0 1px 0;
+  float: left;
+  margin-left: 10px;
+}
+
+body.normal #bluebar a {
+  text-decoration: none;
+  color: #000;
+  display: block;
+  line-height: 20px;
+  height: 20px;
+}
+
+body.normal input#myInput {
+  width: 130px;
+  margin-left: 10px;
+  margin-top: 10px;
+  float: left;
+}
+
+body.normal .titlelink {
+  margin-left: 0;
+  color: #666;
+}
+
+body.normal .titlelink.complete {
+  color: #000;
+}
+
+body.normal #details {
+  position: absolute;
+  left: 0;
+  top: 40px;
+  right: 0;
+  bottom: 0;
+  padding: 20px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body.normal #details h1 {
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+}
+
+body.normal #details h2 {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+}
+
+body.normal #edit {
+  position: absolute;
+  left: 0;
+  top: 40px;
+  right: 0;
+  bottom: 0;
+  padding: 20px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body.normal .toc {
+  float: right;
+  position: relative;
+  top: -19px;
+  right: -20px;
+  width: 250px;
+  border-left: 1px #ccc solid;
+  border-bottom: 1px #ccc solid;
+  font-size: 0.8em;
+  background-color: #ddd;
+  list-style-type: none;
+  margin: 0;
+  padding: 5px;
+}
+
+body.normal .toc a {
+  display: block;
+  font-family: "Lucida Grande";
+  font-weight: bold;
+  text-decoration: none;
+  color: #999;
+  text-shadow: #F5F7F9 0 1px 0;
+}
+
+body.normal .toc li {
+  list-style-type: none;
+  margin: 0;
+  padding: 5px;
+}
+
+body.normal #list {
+  position: fixed;
+  height: 100%;
+  width: 300px;
+  left: 200px;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-right: 1px #111 solid;
+}
+
+body.normal #list ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+body.normal #list ul li {
+  margin: 0;
+  list-style-type: none;
+  width: 100%;
+  line-height: 1em;
+  font-size: 0.9em;
+  padding: 7px;
+  white-space: nowrap;
+}
+
+body.normal #list ul li a {
+  display: inline-block;
+}
+
+body.normal #downloader {
+  position: absolute;
+  top: 40px;
+  right: 5px;
+  width: 400px;
+  height: 350px;
+  display: none;
+}
+
+body.normal #downloader iframe {
+  width: 400px;
+  height: 350px;
+}
+
+body.normal #bookswide, body.normal #log {
+  position: fixed;
+  height: 100%;
+  right: 0;
+  top: 40px;
+  left: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-bottom: 1px #111 solid;
+}
+
+body.normal #bookswide ul, body.normal #log ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+body.normal #bookswide ul li, body.normal #log ul li {
+  margin: 0;
+  list-style-type: none;
+  width: 100%;
+  line-height: 1em;
+  font-size: 0.9em;
+  padding: 7px;
+  white-space: nowrap;
+}
+
+body.normal #bookswide ul li a, body.normal #log ul li a {
+  display: inline-block;
+}
+
+body.normal #bookswide ul li span.detailtoggle, body.normal #log ul li span.detailtoggle {
+  font-size: 10px;
+  display: inline-block;
+  visibility: hidden;
+  padding: 2px;
+  width: 12px;
+}
+
+body.normal #bookswide ul li:hover span.detailtoggle, body.normal #log ul li:hover span.detailtoggle {
+  visibility: visible;
+}
+
+body.normal #bookswide .byline, body.normal #log .byline {
+  display: inline;
+  margin-left: 20px;
+}
+
+body.normal #log table {
+  margin: 10px;
+}
+
+body.normal #log table tr td.date {
+  font-size: 13px;
+  width: 12em;
+}
+
+body.normal #log table tr td.booktitle {
+  font-size: 15px;
+}
+
+body.normal #books {
+  position: fixed;
+  height: 100%;
+  right: 0;
+  top: 40px;
+  left: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-bottom: 1px #111 solid;
+}
+
+body.normal #books ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+body.normal #books ul li {
+  margin: 0;
+  list-style-type: none;
+  width: 100%;
+  line-height: 1em;
+  font-size: 0.9em;
+  padding: 7px;
+  white-space: nowrap;
+}
+
+body.normal #books ul li a {
+  display: inline-block;
+}
+
+body.normal .dl-link {
+  background: #DADFE8;
+  padding: 3px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+  margin-left: 3px;
+  font-size: 0.6em;
+}
+
+body.normal div.summary {
+  margin-left: 130px;
+  font-size: 0.7em;
+  white-space: normal;
+}
+
+body.normal .byline {
+  display: block;
+  font-size: 0.8em;
+  font-weight: normal;
+}
+
+body.normal .byline:before {
+  content: 'by ';
+}
 
 body.read p {
   width: 500px;
@@ -231,23 +321,29 @@ body.read p {
   margin: 3px auto !important;
   font-family: "Lucida Grande";
   font-weight: normal;
-  border: none; }
-  body.read p font {
-    width: 500px;
-    font-size: 20px;
-    line-height: 28px;
-    margin: 3px auto !important;
-    font-family: "Lucida Grande";
-    font-weight: normal;
-    border: none; }
-  body.read p span {
-    width: 500px;
-    font-size: 20px;
-    line-height: 28px;
-    margin: 3px auto !important;
-    font-family: "Lucida Grande";
-    font-weight: normal;
-    border: none; }
+  border: none;
+}
+
+body.read p font {
+  width: 500px;
+  font-size: 20px;
+  line-height: 28px;
+  margin: 3px auto !important;
+  font-family: "Lucida Grande";
+  font-weight: normal;
+  border: none;
+}
+
+body.read p span {
+  width: 500px;
+  font-size: 20px;
+  line-height: 28px;
+  margin: 3px auto !important;
+  font-family: "Lucida Grande";
+  font-weight: normal;
+  border: none;
+}
+
 body.read blockquote {
   width: 500px;
   font-size: 20px;
@@ -255,7 +351,9 @@ body.read blockquote {
   margin: 3px auto !important;
   font-family: "Lucida Grande";
   font-weight: normal;
-  border: none; }
+  border: none;
+}
+
 body.read div {
   width: 500px;
   font-size: 20px;
@@ -263,7 +361,9 @@ body.read div {
   margin: 3px auto !important;
   font-family: "Lucida Grande";
   font-weight: normal;
-  border: none; }
+  border: none;
+}
+
 body.read .toc {
   position: fixed;
   top: -5px;
@@ -277,32 +377,49 @@ body.read .toc {
   overflow: auto;
   list-style-type: none;
   margin: 0;
-  padding: 5px; }
-  body.read .toc:hover {
-    left: -5px; }
-  body.read .toc a {
-    color: #333;
-    display: block;
-    font-family: "Lucida Grande";
-    font-weight: bold; }
-  body.read .toc li {
-    list-style-type: none;
-    margin: 0;
-    padding: 5px; }
+  padding: 5px;
+}
+
+body.read .toc:hover {
+  left: -5px;
+}
+
+body.read .toc a {
+  color: #333;
+  display: block;
+  font-family: "Lucida Grande";
+  font-weight: bold;
+}
+
+body.read .toc li {
+  list-style-type: none;
+  margin: 0;
+  padding: 5px;
+}
+
 body.read a {
   text-decoration: none;
   color: #333;
   font-family: "Lucida Grande";
-  font-weight: bold; }
-body.read h1 {
-  text-align: center; }
-body.read h2 {
-  text-align: center; }
-body.read h3 {
-  text-align: center; }
-body.read h4 {
-  text-align: center; }
-body.read h5 {
-  text-align: center; }
+  font-weight: bold;
+}
 
-/*# sourceMappingURL=ui.css.map */
+body.read h1 {
+  text-align: center;
+}
+
+body.read h2 {
+  text-align: center;
+}
+
+body.read h3 {
+  text-align: center;
+}
+
+body.read h4 {
+  text-align: center;
+}
+
+body.read h5 {
+  text-align: center;
+}

@@ -184,7 +184,7 @@ body.normal {
       height:350px;
     }
   }
-  #bookswide {
+  #bookswide, #log {
     position: fixed;
     height: 100%;
     right: 0;
@@ -226,6 +226,20 @@ body.normal {
     .byline {
       display: inline;
       margin-left: 20px;
+    }
+  }
+  #log {
+    table {
+      margin: 10px;
+      tr {
+        td.date {
+          font-size: 13px;
+          width: 12em;
+        }
+        td.booktitle {
+          font-size: 15px;
+        }
+      }
     }
   }
   #books {
