@@ -31,7 +31,6 @@ class AddBook extends CommandLine {
     $log = __DIR__ . "/tmp/ebooklib.log";
     $file = $this->getArgument('FILE');
     $lib = new Library();
-    $lib->logThis("Adding $file\n");
     if($file && file_exists($file) && strpos($file, '.epub') > 0) {
       $book = new Ebook($file);
       $book->file = $book->cleanupFile($file);
