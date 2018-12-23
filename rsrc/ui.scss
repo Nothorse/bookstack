@@ -22,6 +22,7 @@ body.normal {
     position: fixed;
     width: 100%;
     height: 40px;
+    top: 0;
     color: $normal;
     background: #DADFE8;
     list-style-position: inside;
@@ -38,15 +39,6 @@ body.normal {
       cursor: pointer;
       font-size: 15pt;
       float: left;
-    }
-    #showhidedl {
-      float: right;
-      width: 18px;
-      height: 18px;
-      text-align: center;
-      margin-right: 5px;
-      cursor: pointer;
-      font-size: 15pt;
     }
     ul {
       list-style: none;
@@ -85,9 +77,8 @@ body.normal {
     color: $complete;
   }
   #details {
-    position: absolute;
     left: 0;
-    top: 40px;
+    margin-top: 40px;
     right: 0;
     bottom: 0;
     padding: 20px;
@@ -107,9 +98,8 @@ body.normal {
     }
   }
   #edit {
-    position: absolute;
     left: 0;
-    top: 40px;
+    margin-top: 40px;
     right: 0;
     bottom: 0;
     padding: 20px;
@@ -172,23 +162,10 @@ body.normal {
     li.current {
     }
   }
-  #downloader {
-    position:absolute;
-    top:40px;
-    right:5px;
-    width:400px;
-    height:350px;
-    display: none;
-    iframe {
-      width:400px;
-      height:350px;
-    }
-  }
   #bookswide, #log {
-    position: fixed;
-    height: 100%;
     right: 0;
-    top: 40px;
+    margin-top: 40px;
+    margin-bottom: 20px;
     left: 0;
     padding: 0;
     overflow-x: hidden;
@@ -229,8 +206,15 @@ body.normal {
     }
   }
   #log {
+    margin-top: 50px;
+    margin-left: 20px;
+    font-size: 15px;
+    form {
+      margin-top: 5px;
+      input {font-size: 16px;}
+    }
     table {
-      margin: 10px;
+      //margin: 20px 0 10px 20px;
       tr {
         td.date {
           font-size: 13px;
