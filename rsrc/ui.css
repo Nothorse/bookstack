@@ -119,11 +119,10 @@ body.normal {
       padding: 0;
       list-style-type: none; }
       body.normal #list ul li {
+        font-size: 13px;
         margin: 0;
         list-style-type: none;
         width: 100%;
-        line-height: 1em;
-        font-size: 0.9em;
         padding: 7px;
         white-space: nowrap; }
         body.normal #list ul li a {
@@ -145,8 +144,8 @@ body.normal {
         margin: 0;
         list-style-type: none;
         width: 100%;
-        line-height: 1em;
-        font-size: 0.9em;
+        line-height: 15px;
+        font-size: 14px;
         padding: 7px;
         white-space: nowrap; }
         body.normal #bookswide ul li a, body.normal #log ul li a {
@@ -193,8 +192,8 @@ body.normal {
         margin: 0;
         list-style-type: none;
         width: 100%;
-        line-height: 1em;
-        font-size: 0.9em;
+        line-height: 15px;
+        font-size: 14px;
         padding: 7px;
         white-space: nowrap; }
         body.normal #books ul li a {
@@ -205,14 +204,14 @@ body.normal {
     -moz-border-radius: 2px;
     border-radius: 2px;
     margin-left: 3px;
-    font-size: 0.6em; }
+    font-size: 12px; }
   body.normal div.summary {
     margin-left: 130px;
     font-size: 0.7em;
     white-space: normal; }
   body.normal .byline {
     display: block;
-    font-size: 0.8em;
+    font-size: 13px;
     font-weight: normal; }
     body.normal .byline:before {
       content: 'by '; }

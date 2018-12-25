@@ -4,6 +4,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>Ebook Library</title>
+    <meta name="viewport" content="width=device-width, initial-scale=0.7">
     <script src="/rsrc/jquery.js" type="text/javascript" language="javascript" charset="utf-8"></script>
     <script>
         function reload() {
@@ -62,12 +63,6 @@
         </li>
         <li class="category">
             <a href="%%self%%?sort=author">Authors</a>
-        </li>
-        <li class="category">
-            <a href="%%self%%?sort=tags">Tags</a>
-        </li>
-        <li class="category">
-            <a href="%%self%%?sort=list">Lists</a>
         </li>
         <li class="category">
             <a href="%%self%%/add/">Add/Log</a>
