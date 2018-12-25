@@ -306,14 +306,11 @@ class Dispatcher {
   }
 
   /**
+   * @deprecated old stuff remains of odps support
    * @return string
    */
   public function getproto() {
-      if(strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false) {
-      return "epub";
-    } else {
-      return "http";
-    }
+    return "http";
   }
 
 
