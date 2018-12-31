@@ -38,12 +38,13 @@
         }
         -->
     </style>
-    <form action="$url" method="post">
+    <form action="$url" method="post" enctype="multipart/form-data">
         <input type="hidden" name="editactive" value="1">
         <label>Title: <input type="text" name="title" value="%%title%%"></label>
         <label>Author: <input type="text" name="author" value="%%author%%"></label>
         <label>Tags: <textarea name="tags">%%tags%%</textarea></label>
         <label>Summary: <textarea name="summary">%%summary%%</textarea></label>
+        <label>Coverimage: <input type="file" name="illu"></label>
         <button type="submit" id="submit" value="Update Book">Update Book</button>
         <a href="$backurl">Cancel Edit</a>
     </form>

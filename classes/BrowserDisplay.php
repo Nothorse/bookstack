@@ -200,6 +200,7 @@ EOT;
 
   /**
    * Print the log.
+   * @param array $log log entries
    */
   public function printLog($log) {
     echo "<table>";
