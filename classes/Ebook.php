@@ -1,5 +1,7 @@
 <?php
 namespace EBookLib;
+use Treinetic\ImageArtist\lib\Image as Image;
+
 /**
  * Class Ebook
  */
@@ -337,6 +339,12 @@ class Ebook extends MetaBook {
       foreach($this->tags as $id => $tag) {
         $meta->appendChild($this->allmeta->createElementNS('http://purl.org/dc/elements/1.1/', 'dc:subject', trim($tag)));
       }
+      foreach($this->otherMeta as $name => $value) {
+        $metaelement = $this->allmeta->createElement('meta');
+        $metaelement->setAttribute('name', $name);
+        $metaelement->setAttribute('value', $value);
+        $meta->appendChild($metaelement);
+      }
 
       $newContents = $this->prettyprint($this->allmeta)->saveXML();
       //Delete the old...
@@ -357,6 +365,68 @@ class Ebook extends MetaBook {
    */
   public function sanitize($string) {
     return str_replace(['/', ',', ';'], ['_', '_'], $string);
+  }
+
+  public function updateCover($generate = false) {
+    $tmp = dirname(__DIR__) . '/tmp';
+    $zip = new \ZipArchive();
+    if (!$zip->open($this->getFullFilePath())===TRUE){
+      return;
+    }
+    $coverexists = ($this->otherMeta['cover']);
+    if (!$coverexists || $generate) {
+      $this->manifest['cover'] = 'OEBPS/images/cover.png';
+      $this->otherMeta['cover'] = 'cover';
+      $item = $this->allmeta->createElement('item');
+      $item->setAttribute('href', 'OEBPS/images/cover.png');
+      $item->setAttribute('id', 'cover');
+      $item->setAttribute('media-type', "image/png");
+      $this->allmeta->getElementsByTagName('manifest')->item(0)->appendChild($item);
+      $meta = $this->allmeta->createElement('meta');
+      $meta->setAttribute('name', 'cover');
+      $meta->setAttribute('value', 'cover');
+      $this->allmeta->getElementsByTagName('metadata')->item(0)->appendChild($meta);
+      $fileToModify = $this->get_metafile($zip);
+      $newContents = $this->prettyprint($this->allmeta)->saveXML();
+      //Delete the old...
+      $zip->deleteName($fileToModify);
+      //Write the new...
+      $zip->addFromString($fileToModify, $newContents);
+      $covergen = COVERGEN . ' -a "' . $this->author . '" ';
+      $covergen .= ' -t "' . $this->title . '" ';
+      $covergen .= ' -o ' . $tmp . '/cover.png';
+      exec($covergen, $out, $return);
+      if ($return === 0) {
+        if (!$zip->getFromName('OEBPS/images')) {
+          $zip->addEmptyDir('OEBPS/images');
+        }
+        $zip->addFile("$tmp/cover.png", 'OEBPS/images/cover.png');
+      } else {
+        \print_r($out);
+      }
+
+    } else {
+      $coverpath = $this->manifest[$this->otherMeta['cover']];
+      $coverdata = $zip->getFromName($this->path.$coverpath);
+      file_put_contents($tmp . '/cover.png', $cover);
+    }
+    if (file_exists("$tmp/illu.jpg") ) {
+      $cover = new Image("$tmp/cover.png");
+      $illu = new Image("$tmp/illu.jpg");
+      if ($illu->getWidth() > $illu->getHeight()) {
+        $illu->scaleToHeight(1600);
+      } else {
+        $illu->scaleToWidth(1600);
+      }
+      $illu->crop(0,0,1600,1600);
+      $cover->merge($illu, 0, 800);
+      $cover->save("$tmp/covernew.png", IMAGETYPE_PNG);
+      unlink("$tmp/illu.jpg");
+    } else {
+      copy("$tmp/cover.png", "$tmp/covernew.png");
+    }
+    $coverpath = $this->manifest[$this->otherMeta['cover']];
+    $zip->addFile("$tmp/covernew.png", $coverpath);
   }
 
 }

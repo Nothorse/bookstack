@@ -107,7 +107,7 @@ class Dispatcher {
     $alist = $this->listdir_by_author($path, $library);
     $this->display->printAuthorList($alist, 'author', $author);
     if ($author) $this->display->printBookList($list, 'books');
-    $this->display->printFoot();
+    $this->display->printFooter();
     exit;
   }
 
@@ -150,11 +150,6 @@ class Dispatcher {
       echo file_get_contents($book->getFullFilePath());
       exit;
     }
-    $type = (isset($_COOKIE['booksel']))? $_COOKIE['booksel'] : 'author';
-    $current = (isset($_COOKIE['selval']))? $_COOKIE['selval'] : $book->author;
-    setcookie('booksel', '');
-    setcookie('selval', '');
-    $list = ($type == 'tag') ? $library->getTagList() : $library->getAuthorlist();
     $this->display->printHeader();
     $book->get_meta();
     echo $this->display->showDetails($book);
@@ -171,11 +166,6 @@ class Dispatcher {
     $book = $library->getBook($path[1]);
     $library->queueThis($book->getFullFilePath());
     $library->logThis("Update " . $book->title);
-    $type = (isset($_COOKIE['booksel']))? $_COOKIE['booksel'] : 'author';
-    $current = (isset($_COOKIE['selval']))? $_COOKIE['selval'] : $book->author;
-    setcookie('booksel', '');
-    setcookie('selval', '');
-    $list = ($type == 'tag') ? $library->getTagList() : $library->getAuthorlist();
     $this->display->printHeader();
     $book->get_meta();
     echo $this->display->showDetails($book);
@@ -220,6 +210,14 @@ class Dispatcher {
     $book->title = (isset($_POST['title'])) ? $_POST['title']:$book->title;
     $book->author = (isset($_POST['author'])) ? $_POST['author']:$book->author;
     $book->sortauthor = (isset($_POST['author'])) ? strtolower($_POST['author']):$book->sortauthor;
+    if (isset($_FILES['illu'])) {
+      $fileName = $_FILES['illu']['name'];
+      $fileSize = $_FILES['illu']['size'];
+      $fileTmpName  = $_FILES['illu']['tmp_name'];
+      $fileType = $_FILES['illu']['type'];
+      move_uploaded_file($fileTmpName, dirname(__DIR__) . "/tmp/illu.jpg");
+    }
+    $book->updateCover();
     if (isset($_POST['tags'])) {
       $tags = explode(',', $_POST['tags']);
       $book->tags = array();
@@ -230,14 +228,7 @@ class Dispatcher {
     $book->summary = (isset($_POST['summary'])) ? $_POST['summary']:$book->summary;
     $library->updateBook($book);
     $res = $book->modify_meta();
-    //setcookie('editresult', $res);
-    } else {
-      //setcookie('editresult', '');
     }
-    $type = $_COOKIE['booksel'];
-    $current = $_COOKIE['selval'];
-    //setcookie('booksel', '');
-    //setcookie('selval', '');
     echo (isset($_POST['editactive'])) ? $this->display->showDetails($book) :
       $this->display->getEditForm($book, $url);
     $this->display->printFoot();
