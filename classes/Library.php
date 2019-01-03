@@ -51,6 +51,7 @@ class Library{
    * @return bool result
    */
   private function checkTables() {
+    return true;
     $q=$this->db->query("PRAGMA table_info(books)");
     if ($q->fetchArray() < 1) {
         if (!$this->db->exec("
