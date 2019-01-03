@@ -23,7 +23,7 @@ class Manifest {
   }
 
   /**
-   * Write Spine to xml
+   * Write Manfest to xml
    * @param \DOMElement  $root root element
    * @param \DOMDocument $dom  DomDocument
    */
@@ -38,6 +38,38 @@ class Manifest {
     }
     $root->appendChild($manifest);
 
+  }
+
+  /**
+   * get manifest item by id
+   * @param  string $id id of item
+   * @return ManifestItem
+   */
+  public function getItem($id) {
+    foreach ($this->items as $key => $item) {
+      if ($item->id == $id) return $item;
+    }
+  }
+
+  /**
+   * set manifest item by id
+   * @param  string $id        id of item
+   * @param  string $mediatype mediatype
+   * @param  string $href      location
+   */
+  public function setItem($id, $mediatype, $href) {
+    $exists = false;
+    foreach ($this->items as $key => $item) {
+      if ($item->id == $id) {
+        $item->href = $href;
+        $item->mediatype = $mediatype;
+        $this->items[$key] = $item;
+        $exists = true;
+      }
+    }
+    if (!$exists) {
+      $this->items[] = new ManifestItem($href, $id, $mediatype);
+    }
   }
 
 }

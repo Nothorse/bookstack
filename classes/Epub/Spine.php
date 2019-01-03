@@ -28,7 +28,7 @@ class Spine {
     $itemlist = $spineelement->getElementsByTagName('itemref');
     for ($i = 0; $i < $itemlist->length; $i++) {
       $element = $itemlist->item($i);
-      $this->items[] = ItemRef::parseElement($element);
+      $this->items[] = SpineItem::parseElement($element);
     }
   }
 
@@ -49,4 +49,35 @@ class Spine {
     }
     $root->appendChild($spine);
   }
+
+  /**
+   * get spine item by id
+   * @param  string $id id of item
+   * @return SpineItem
+   */
+  public function getItem($id) {
+    foreach ($this->items as $key => $item) {
+      if ($item->idref == $id) return $item;
+    }
+  }
+
+  /**
+   * set spineitem item by id
+   * @param  string $id     id of item
+   * @param  bool   $linear linear
+   */
+  public function setItem($id, $linear) {
+    $exists = false;
+    foreach ($this->items as $key => $item) {
+      if ($item->idref == $id) {
+        $item->linear = $linear
+        $exists = true;
+      }
+    }
+    if (!$exists) {
+      $this->items[] = new SpineItem($id, $linear);
+    }
+  }
+
+
 }

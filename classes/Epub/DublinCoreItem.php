@@ -88,10 +88,34 @@ class DublinCoreItem {
   }
 
   /**
+   * is title
+   * @return bool [description]
+   */
+  public function isTitle() {
+    return $this->tag == 'dc:title';
+  }
+
+  /**
+   * is subject
+   * @return bool [description]
+   */
+  public function isSubject() {
+    return $this->tag == 'dc:subject';
+  }
+
+  /**
    * getter
    * @return string content
    */
   public function getContent() {
     return $this->content;
+  }
+
+  /**
+   * setter
+   * @param string $content content
+   */
+  public function setContent($content) {
+    $this->content = $content;
   }
 }
