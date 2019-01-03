@@ -46,4 +46,8 @@ class MetaItem {
       $element->getAttribute('content')
     );
   }
+
+  public function isCover() {
+    return $this->name == 'cover';
+  }
 }

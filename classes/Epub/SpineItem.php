@@ -1,7 +1,7 @@
 <?php
 namespace EBookLib\Epub;
 
-class ItemRef {
+class SpineItem {
 
   /**
    * idref

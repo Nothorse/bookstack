@@ -94,5 +94,84 @@ class Metadata {
     return $authors;
   }
 
+  /**
+   * setter for subject tag
+   * @param string[] $subjects subjects
+   */
+  public function setSubjects($subjects) {
+    foreach ($this->dcItems as $key => $item) {
+      if ($item->isSubject()) unset($this->dcItems[$key]);
+    }
+    foreach ($subjects as $key => $subject) {
+      $subject = new DublinCoreItem(
+        'dc:subject', $subject
+      );
+      $this->dcItems[] = $subject;
+    }
+  }
+
+  /**
+   * getter for subject tag
+   * @return string[] subjects
+   */
+  public function getSubjects() {
+    $subjects = [];
+    foreach ($this->dcItems as $key => $item) {
+      if ($item->isSubject()) $subjects[] = $item->getContent();
+    }
+    return $subjects;
+  }
+
+  /**
+   * setter for title tag
+   * @param string $title Authors
+   */
+  public function setTitle($title) {
+    foreach ($this->dcItems as $key => $item) {
+      if ($item->isTitle()) $item->setContent($title);
+    }
+  }
+
+  /**
+   * getter for title tag
+   * @return string title
+   */
+  public function getTitle() {
+    $title = [];
+    foreach ($this->dcItems as $key => $item) {
+      if ($item->isTitle()) return $item->getContent();
+    }
+    return 'Untitled';
+  }
+
+  /**
+   * getter
+   * @return string cover id in manifest
+   */
+  public function getCover() {
+    foreach ($this->metaItems as $key => $item) {
+      if ($item->isCover()) return $item->getContent();
+    }
+    return '';
+  }
+
+  /**
+   * setter for cover tag
+   * @param string $coverId Cover id
+   */
+  public function setCover($coverId) {
+    $exists = false;
+    foreach ($this->metaItems as $key => $item) {
+      if ($item->isCover()) {
+        $item->content = $coverId;
+        $this->metaItems[$key] = $item;
+        $exists = true;
+      }
+    }
+    if (!$exists) {
+      $this->metaItems[] = new MetaItem('cover', $coverId);
+    }
+  }
+
 
 }
