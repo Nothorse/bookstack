@@ -34,6 +34,7 @@ class MetaBook {
    * @var string
    */
   public $file;
+
   /**
    * @var array
    */
