@@ -27,7 +27,6 @@
             height: 25px;
             font-size: 13px;
             border: 1px #ccc inset;
-            left:20px;
             position: relative;
             display: block;
         }
@@ -45,6 +44,7 @@
         <label>Tags: <textarea name="tags">%%tags%%</textarea></label>
         <label>Summary: <textarea name="summary">%%summary%%</textarea></label>
         <label>Coverimage: <input type="file" name="illu"></label>
+        <label>Regenerate Cover:  <input type="checkbox" name="updatecover"></label>
         <button type="submit" id="submit" value="Update Book">Update Book</button>
         <a href="$backurl">Cancel Edit</a>
     </form>
