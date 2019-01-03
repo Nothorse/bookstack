@@ -145,11 +145,6 @@ class Dispatcher {
    */
   public function handleshow($library, $path) {
     $book = $library->getBook($path[1]);
-    if($this->getproto() == 'epub') {
-      header("Content-Type: application/epub");
-      echo file_get_contents($book->getFullFilePath());
-      exit;
-    }
     $this->display->printHeader();
     $book->get_meta();
     echo $this->display->showDetails($book);
@@ -202,6 +197,7 @@ class Dispatcher {
    */
   public function handleedit($library, $path) {
   $book = $library->getBook($path[1]);
+  echo "$book\n";
   $book->get_meta();
   $book->id = $path[1];
   $url = $_SERVER['PHP_SELF'];
@@ -217,7 +213,10 @@ class Dispatcher {
       $fileType = $_FILES['illu']['type'];
       move_uploaded_file($fileTmpName, dirname(__DIR__) . "/tmp/illu.jpg");
     }
-    $book->updateCover();
+    if (isset($_FILES['illu']) || (isset($_POST['updatecover']) &&
+                                   $_POST['updatecover'])) {
+      $book->updateCover();
+    }
     if (isset($_POST['tags'])) {
       $tags = explode(',', $_POST['tags']);
       $book->tags = array();
@@ -228,6 +227,7 @@ class Dispatcher {
     $book->summary = (isset($_POST['summary'])) ? $_POST['summary']:$book->summary;
     $library->updateBook($book);
     $res = $book->modify_meta();
+    $library->logThis("Metadata updated for " . $book->title . " Result: $res");
     }
     echo (isset($_POST['editactive'])) ? $this->display->showDetails($book) :
       $this->display->getEditForm($book, $url);
