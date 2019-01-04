@@ -37,14 +37,14 @@ class Metadata {
         $this->dcItems[] = DublinCoreItem::parseElement($element);
       }
       if ($tag == 'meta') {
-        $this->metaItems[$element->getAttribute('name')] = MetaItem::parseElement($element);
+        $this->metaItems[] = MetaItem::parseElement($element);
       }
     }
   }
 
   /**
    * Write Metadata to xml
-   * @param \DOMElement  $root root element
+   * @param \DOMElement  $root root ele ment
    * @param \DOMDocument $dom  DomDocument
    */
   public function writeElement($root, $dom) {
@@ -119,6 +119,7 @@ class Metadata {
     foreach ($this->dcItems as $key => $item) {
       if ($item->isSubject()) $subjects[] = $item->getContent();
     }
+    if (empty($subjects)) $subjects[] = 'no tags';
     return $subjects;
   }
 
@@ -163,7 +164,7 @@ class Metadata {
     $exists = false;
     foreach ($this->metaItems as $key => $item) {
       if ($item->isCover()) {
-        $item->content = $coverId;
+        $item->setContent($coverId);
         $this->metaItems[$key] = $item;
         $exists = true;
       }
@@ -172,6 +173,31 @@ class Metadata {
       $this->metaItems[] = new MetaItem('cover', $coverId);
     }
   }
+
+  /**
+   * getter
+   * @return string summary (dc:description)
+   */
+  public function getSummary() {
+    foreach ($this->dcItems as $key => $item) {
+      if ($item->isSummary()) return $item->getContent();
+    }
+    return 'No summary';
+  }
+
+  /**
+   * setter
+   * @param  string $summary summary (dc:description)
+   */
+  public function setSummary($summary) {
+    $exists = false;
+    foreach ($this->dcItems as $key => $item) {
+      if ($item->isSummary()) $item->setContent($summary);
+      $exists = true;
+    }
+    $this->dcItems[] = new DublinCoreItem('dc:description', $summary);
+  }
+
 
 
 }

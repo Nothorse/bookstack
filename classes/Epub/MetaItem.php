@@ -47,7 +47,28 @@ class MetaItem {
     );
   }
 
+  /**
+   * is cover entry
+   * @return bool
+   */
   public function isCover() {
     return $this->name == 'cover';
   }
+
+  /**
+   * get content
+   * @return string content of meta tag
+   */
+  public function getContent() {
+    return $this->content;
+  }
+
+  /**
+   * Setter
+   * @param string $content
+   */
+  public function setContent(string $content) {
+    $this->content = $content;
+  }
+
 }

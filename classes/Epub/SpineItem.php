@@ -38,7 +38,7 @@ class SpineItem {
    * @return ItemRef              itemref
    */
   public static function parseElement($element) {
-    return new ItemRef(
+    return new SpineItem(
       $element->getAttribute('idref'),
       $element->getAttribute('linear')
     );
