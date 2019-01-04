@@ -171,6 +171,7 @@ class BrowserDisplay {
     $data['summary'] = $book->summary;
     $data['tags'] = $book->taglist();
     $data['author'] = $book->author;
+    $data['backurl'] = "http://".SERVER.BASEURL."/show/".$book->id.'/'.$book->title;
     return $form->render($data);
   }
 
