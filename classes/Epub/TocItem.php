@@ -1,16 +1,42 @@
 <?php
 namespace EBookLib\Epub;
 
+/**
+ * NCX navpoint item
+ */
 class TocItem {
 
+  /**
+   * navpoint label
+   * @var string
+   */
   public $navLabel;
 
+  /**
+   * href of file in zip
+   * @var string
+   */
   public $contentSrc;
 
+  /**
+   * idref
+   * @var string
+   */
   public $id;
 
+  /**
+   * play order of navpoints
+   * @var string
+   */
   public $playOrder;
 
+  /**
+   * Constructor
+   * @param string $navLabel   label
+   * @param string $contentSrc href
+   * @param string $id         idref
+   * @param string $playOrder  play order
+   */
   public function __construct($navLabel, $contentSrc, $id, $playOrder) {
     $this->navLabel = $navLabel;
     $this->contentSrc = $contentSrc;

@@ -10,11 +10,11 @@ class CoverData {
    */
   public $coverPath;
 
-  private $coverId;
+  public $coverId;
 
-  private $coverpage;
+  public $coverpage;
 
-  private $coverpageId;
+  public $coverpageId;
 
   /**
    * Constructor
@@ -41,19 +41,24 @@ class CoverData {
 
   /**
    * set a new Cover
-   * @param string $coverPath path to cover in zip
+   * @param string $coverPath path to cover outside zip
    */
   public function setCover($coverPath) {
-    $this->coverPath = $coverPath;
-    $coverId = $this->metadata->getCover();
-    if (!$coverId) {
-      $coverId = 'cover';
-      $this->metadata->setCover($coverId);
+    if (!$this->coverId) {
+      $this->coverId = 'cover';
     }
-    $existingCover = $this->manifest->getItem($coverId);
-    $this->manifest->setItem($coverId, 'image/png', $coverPath);
-    if (!$this->spine->getItem($coverId)) {
-      array_unshift($this->spine->items, new SpineItem($coverId, true));
+    if (!$this->ebook->metadata->getCover()) {
+      $this->ebook->metadata->setCover($this->coverId);
+      $this->coverPath = 'Images/cover.png';
+    }
+    if (!$this->ebook->manifest->getItem($this->coverId)) {
+      $this->ebook->manifest->setItem($this->coverId, 'image/png', $this->coverPath);
+    } else {
+      $this->coverPath = $this->ebook->manifest->getItem($this->coverId)->href;
+    }
+    $this->ebook->writeToZip($this->coverPath, \file_get_contents($coverPath));
+    if (!$this->ebook->spine->getItem($this->coverId)) {
+      array_unshift($this->ebook->spine->items, new SpineItem($this->coverId, true));
     }
   }
 

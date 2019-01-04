@@ -1,13 +1,10 @@
 <?php
 namespace EBookLib;
 
-use ZipArchive;
-use DOMDocument;
 
 use EBookLib\Epub\CoverData as CoverData;
 use EBookLib\Epub\Spine as Spine;
 use EBookLib\Epub\Manifest as Manifest;
-use EBookLib\Epub\ManifestItem;
 use EBookLib\Epub\Metadata as EpubMetadata;
 use EBookLib\Epub\Guide as Guide;
 use EBookLib\Epub\TableOfContents;
@@ -58,20 +55,6 @@ class Ebook extends MetaBook {
    * @var EpubMetadata
    */
   public $metadata;
-
-
-  /**
-   * misc meta
-   * @var array
-   */
-  public $otherMeta = [];
-
-  /**
-   * lookup reverse meta
-   * @var array
-   */
-  public $lookup = [];
-
 
   /**
    * ebook constructor.
@@ -124,27 +107,7 @@ class Ebook extends MetaBook {
       $this->tags = $this->metadata->getSubjects();
       $this->summary = $this->metadata->getSummary();
       //modify
-      $this->manifest->items['illustration'] = new ManifestItem('OEBPS/illu.png', 'illustration', 'image/png');
-      $this->metadata->setAuthors(['idot1', 'idot2']);
-      $this->metadata->setTitle('TITLE: ' . $this->metadata->getTitle());
-      $subjects = $this->metadata->getSubjects();
-      $subjects[] = 'fanfic';
-      $subjects[] = 'fandom';
-      $this->metadata->setSubjects($subjects);
-      $coverdata = new CoverData($this);
       if (!$this->id) $this->create_id();
-      //new doc
-      $test = new DOMDocument('1.0');
-      $root = $test->createElementNS('http://www.idpf.org/2007/opf','package');
-      $root->setAttribute('unique-identifier', $uniqueid);
-      $root->setAttribute('version', $version);
-      $this->spine->writeElement($root, $test);
-      $this->manifest->writeElement($root, $test);
-      $this->metadata->writeElement($root, $test);
-      $this->guide->writeElement($root, $test);
-      $test->appendChild($root);
-      $test->formatOutput = true;
-      $test->preserveWhiteSpace = false;
       $zip->close();
       return $this;
     }else{
@@ -234,7 +197,8 @@ class Ebook extends MetaBook {
     if ($binary) {
       $data = base64_encode($coverdata->getCoverImageData());
     }
-    if (!$data) $data = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
+    if (!$data) $data = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lE".
+                        "QVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
     return ($binary) ? "data:image/jpeg;base64,$data" : $this->path.$coverpath;
   }
 
@@ -342,7 +306,7 @@ class Ebook extends MetaBook {
       $package = $dom->getElementsByTagName('package')->item(0);
       $uniqueid = $package->getAttribute('unique-identifier');
       $version = $package->getAttribute('version');
-      $newdom = new DOMDocument('1.0');
+      $newdom = new \DOMDocument('1.0');
       $root = $newdom->createElementNS('http://www.idpf.org/2007/opf','package');
       $root->setAttribute('unique-identifier', $uniqueid);
       $root->setAttribute('version', $version);
@@ -381,62 +345,30 @@ class Ebook extends MetaBook {
    * @return bool           success
    */
   public function updateCover($generate = false) {
-    $tmp = dirname(__DIR__) . '/tmp';
+    $tmp = dirname(__DIR__) . '/tmp/';
     $zip = new \ZipArchive();
     if (!$zip->open($this->getFullFilePath())===TRUE){
       return;
     }
-    return;
-    $coverexists = ($this->otherMeta['cover']);
-    if (!$coverexists || $generate) {
-      $this->manifest['cover'] = 'OEBPS/images/cover.png';
-      $this->otherMeta['cover'] = 'cover';
-      $item = $this->allmeta->createElement('item');
-      $item->setAttribute('href', 'OEBPS/images/cover.png');
-      $item->setAttribute('id', 'cover');
-      $item->setAttribute('media-type', "image/png");
-      // check for existing cover entry
-
-      $covers = $this->allmeta->getElementsByTagName('manifest')->item(0)->getElementsByTagName('item');
-      for ($i = $covers->length; --$i >= 0; ) {
-        $element = $covers->item($i);
-        if ($element->getAttribute('id') == 'cover') {
-          $element->parentNode->removeChild($el);
-        }
-      }
-
-      $this->allmeta->getElementsByTagName('manifest')->item(0)->appendChild($item);
-      $meta = $this->allmeta->createElement('meta');
-      $meta->setAttribute('name', 'cover');
-      $meta->setAttribute('value', 'cover');
-      $this->allmeta->getElementsByTagName('metadata')->item(0)->appendChild($meta);
-      $fileToModify = $this->get_metafile($zip);
-      $newContents = $this->prettyprint($this->allmeta)->saveXML();
-      //Delete the old...
-      $zip->deleteName($fileToModify);
-      //Write the new...
-      $zip->addFromString($fileToModify, $newContents);
+    $coverdata = new CoverData($this);
+    if (!$coverdata->coverId || $generate) {
       $covergen = COVERGEN . ' -a "' . $this->author . '" ';
       $covergen .= ' -t "' . $this->title . '" ';
       $covergen .= ' -o ' . $tmp . '/cover.png';
       exec($covergen, $out, $return);
-      if ($return === 0) {
-        if (!$zip->getFromName($this->path . 'images')) {
-          $zip->addEmptyDir($this->path . 'images');
-        }
-        $zip->addFile("$tmp/cover.png", $this->path . 'images/cover.png');
-      } else {
-        \print_r($out);
+      if ($return != 0){
+        $zip->close();
+        $this->library->logThis("Cover generate error: $covergen " . implode(',', $out));
+        return;
       }
-
-    } else {
-      $coverpath = $this->manifest[$this->otherMeta['cover']];
-      $coverdata = $zip->getFromName($this->path.$coverpath);
-      file_put_contents($tmp . '/cover.png', $cover);
+      if (!$generate) {
+        file_put_contents($tmp.'cover.png', $coverdata->getCoverImageData());
+      }
+      $coverdata->setCover($tmp . 'cover.png');
     }
-    if (file_exists("$tmp/illu.jpg") ) {
-      $cover = new Image("$tmp/cover.png");
-      $illu = new Image("$tmp/illu.jpg");
+    if (file_exists($tmp . "illu.jpg") ) {
+      $cover = new Image($tmp . "cover.png");
+      $illu = new Image($tmp . "illu.jpg");
       if ($illu->getWidth() > $illu->getHeight()) {
         $illu->scaleToHeight(1600);
       } else {
@@ -444,13 +376,13 @@ class Ebook extends MetaBook {
       }
       $illu->crop(0,0,1600,1600);
       $cover->merge($illu, 0, 800);
-      $cover->save("$tmp/covernew.png", IMAGETYPE_PNG);
+      $cover->save($tmp . 'covernew.png', IMAGETYPE_PNG);
       unlink("$tmp/illu.jpg");
-    } else {
-      copy("$tmp/cover.png", "$tmp/covernew.png");
+      $coverdata->setCover($tmp . 'covernew.png');
+      unlink($tmp . 'covernew.png');
     }
-    $coverpath = $this->manifest[$this->otherMeta['cover']];
-    $zip->addFile("$tmp/covernew.png", $coverpath);
+    if (\file_exists($tmp . 'cover.png')) unlink($tmp . 'cover.png');
+    $this->modify_meta();
   }
 
   /**
@@ -466,6 +398,12 @@ class Ebook extends MetaBook {
     return $zip->getFromName($this->path.$href);
   }
 
+  /**
+   * write data to ebook zip
+   * @param  string $filename file path
+   * @param  string $data     data
+   * @return bool           success
+   */
   public function writeToZip($filename, $data) {
     $zip = new \ZipArchive();
     if ($zip->open($this->getFullFilePath())===TRUE){

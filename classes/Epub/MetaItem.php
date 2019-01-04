@@ -41,10 +41,12 @@ class MetaItem {
    * @return MetaItem            item
    */
   public static function parseElement($element) {
-    return new MetaItem(
-      $element->getAttribute('name'),
-      $element->getAttribute('content')
-    );
+    $name = $element->getAttribute('name');
+    $content = $element->getAttribute('content');
+    if ($name && $content) {
+      return new MetaItem($name, $content);
+    }
+    return false;
   }
 
   /**

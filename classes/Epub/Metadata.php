@@ -37,7 +37,8 @@ class Metadata {
         $this->dcItems[] = DublinCoreItem::parseElement($element);
       }
       if ($tag == 'meta') {
-        $this->metaItems[] = MetaItem::parseElement($element);
+        $metaitem = MetaItem::parseElement($element);
+        if ($metaitem) $this->metaItems[] = $metaitem;
       }
     }
   }
@@ -195,7 +196,9 @@ class Metadata {
       if ($item->isSummary()) $item->setContent($summary);
       $exists = true;
     }
-    $this->dcItems[] = new DublinCoreItem('dc:description', $summary);
+    if (!$exists) {
+      $this->dcItems[] = new DublinCoreItem('dc:description', $summary);
+    }
   }
 
 

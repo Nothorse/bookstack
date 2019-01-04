@@ -35,6 +35,12 @@
             height: 150px;
             line-height: 25px;
         }
+
+        a.button {
+          font-size: 13px;
+          font-style: normal;
+          font-weight: normal;
+        }
         -->
     </style>
     <form action="$url" method="post" enctype="multipart/form-data">
@@ -46,6 +52,6 @@
         <label>Coverimage: <input type="file" name="illu"></label>
         <label>Regenerate Cover:  <input type="checkbox" name="updatecover"></label>
         <button type="submit" id="submit" value="Update Book">Update Book</button>
-        <a href="$backurl">Cancel Edit</a>
+        <a class="button" href="%%backurl%%">Cancel Edit</a>
     </form>
 </div>
