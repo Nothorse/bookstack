@@ -197,7 +197,6 @@ class Dispatcher {
    */
   public function handleedit($library, $path) {
   $book = $library->getBook($path[1]);
-  echo "$book\n";
   $book->get_meta();
   $book->id = $path[1];
   $url = $_SERVER['PHP_SELF'];
@@ -215,7 +214,7 @@ class Dispatcher {
     }
     if (isset($_FILES['illu']) || (isset($_POST['updatecover']) &&
                                    $_POST['updatecover'])) {
-      $book->updateCover();
+      $book->updateCover($_POST['updatecover']);
     }
     if (isset($_POST['tags'])) {
       $tags = explode(',', $_POST['tags']);
