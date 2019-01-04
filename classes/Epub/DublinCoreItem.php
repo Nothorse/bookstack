@@ -104,6 +104,14 @@ class DublinCoreItem {
   }
 
   /**
+   * is summary (dc:description)
+   * @return bool [description]
+   */
+  public function isSummary() {
+    return $this->tag == 'dc:description';
+  }
+
+  /**
    * getter
    * @return string content
    */

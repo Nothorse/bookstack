@@ -70,7 +70,7 @@ class Spine {
     $exists = false;
     foreach ($this->items as $key => $item) {
       if ($item->idref == $id) {
-        $item->linear = $linear
+        $item->linear = $linear;
         $exists = true;
       }
     }

@@ -1,7 +1,18 @@
 <?php
 namespace EBookLib;
-use Treinetic\ImageArtist\lib\Image as Image;
 
+use ZipArchive;
+use DOMDocument;
+
+use EBookLib\Epub\CoverData as CoverData;
+use EBookLib\Epub\Spine as Spine;
+use EBookLib\Epub\Manifest as Manifest;
+use EBookLib\Epub\ManifestItem;
+use EBookLib\Epub\Metadata as EpubMetadata;
+use EBookLib\Epub\Guide as Guide;
+use EBookLib\Epub\TableOfContents;
+use EBookLib\Epub\TocItem;
+use Treinetic\ImageArtist\lib\Image as Image;
 /**
  * Class Ebook
  */
@@ -20,21 +31,34 @@ class Ebook extends MetaBook {
 
   /**
    * Manifest
-   * @var array
+   * @var Manifest
    */
-  public $manifest = [];
+  public $manifest;
 
   /**
    * table of contents
-   * @var array
+   * @var TableOfContents
    */
-  public $toc = [];
+  public $toc;
 
   /**
    * Spine (all files)
-   * @var array
+   * @var Spine
    */
-  public $spine = [];
+  public $spine;
+
+  /**
+   * Guide
+   * @var Guide
+   */
+  public $guide;
+
+  /**
+   * Metadata
+   * @var EpubMetadata
+   */
+  public $metadata;
+
 
   /**
    * misc meta
@@ -72,82 +96,59 @@ class Ebook extends MetaBook {
     $zip = new \ZipArchive;
 
     if ($zip->open($filepath)===TRUE){
-      $container = simplexml_load_string($zip->getFromName(Ebook::CONTAINER));
-      //$rootfile = $container->rootfiles->rootfile['full-path'];
       $rootfile = $this->get_metafile($zip);
       $path = dirname($rootfile);
       $this->path = ($path != '.') ? $path . '/':'';
-      $xml =  simplexml_load_string($zip->getFromName($rootfile), 'SimpleXMLElement', LIBXML_NSCLEAN)->children('http://www.idpf.org/2007/opf');
-      $opf = $xml->metadata;
-      $meta = $opf->children('http://purl.org/dc/elements/1.1/');
-      $this->title   = (string) $meta->title[0];
-      $this->author  = (string) $meta->creator[0];
-      $this->sortauthor = strtolower($this->author);
-      $this->tags = (array) $meta['subject'];
-      $this->oldtaglist =  (array) $meta['subject'];
-      $this->oldtaglist[] = 'gethere';
-      $this->summary = (string) $meta->description[0];
-      if ($this->summary == '') {
-        $this->summary = "No summary for this book yet.";
-      }
-      $this->allmeta = $meta;
-      //$this->cover = $this->is_cover($zip, $epub);
-      $this->create_id();
-      // test with DOM
-
       $dom = new \DOMDocument();
       $dom->loadXML($zip->getFromName($rootfile));
+      $package = $dom->getElementsByTagName('package')->item(0);
+      $uniqueid = $package->getAttribute('unique-identifier');
+      $version = $package->getAttribute('version');
       $meta = $dom->getElementsByTagName('metadata')->item(0);
-      $this->title = $meta->getElementsByTagName('title')->item(0)->nodeValue;
-      $this->author = $meta->getElementsByTagName('creator')->item(0)->nodeValue;
-      $summary = $meta->getElementsByTagName('description')->item(0);
-      if ($summary) {
-        $this->summary = $summary->nodeValue;
-      } else {
-        $this->summary = 'no summary';
-      }
-      $this->otherMeta = [];
-      foreach ($meta->getElementsByTagName('meta') as $id => $node) {
-        $this->otherMeta[$node->getAttribute('name')] = $node->getAttribute('content');
-      }
+      // legacy
+      $this->allmeta = $meta;
 
-      $taglist = $dom->getElementsByTagName('subject');
-      //print_r($taglist);
-      if (empty($taglist)) {
-        $this->tags[] = 'untagged';
-      }
-      foreach($taglist as $id => $tagnode) {
-        $this->tags[$id] = $tagnode->nodeValue;
-      }
-      while($taglist->length > 0) {
-        $meta->removeChild($taglist->item(0));
-      }
-      foreach($this->tags as $id => $tag) {
-        $meta->appendChild($dom->createElementNS('http://purl.org/dc/elements/1.1/', 'dc:subject', $tag));
-      }
-      $this->allmeta = $dom;
-      $manifest = $dom->getElementsByTagName('manifest')->item(0);
-      foreach($manifest->getElementsByTagName('item') as $id => $node) {
-          $this->manifest[$node->getAttribute('id')] = $node->getAttribute('href');
-          $this->lookup[$node->getAttribute('href')] = $node->getAttribute('id');
-      }
-      $spine = $dom->getElementsByTagName('spine')->item(0);
-      foreach($spine->getElementsByTagName('itemref') as $id => $node) {
-          $this->spine[$node->getAttribute('idref')] = $this->manifest[$node->getAttribute('idref')];
-      }
-      // toc
-      $toc = new \DOMDocument();
-      $toc->loadXML($zip->getFromName($this->path.$this->manifest['ncx']));
-      $navlist = $toc->getElementsByTagName('navPoint');
-      foreach($navlist as $id => $navpoint) {
-        $label = $navpoint->getElementsByTagName('navLabel')->item(0)->getElementsByTagName('text')->item(0)->nodeValue;
-        $src = $navpoint->getElementsByTagName('content')->item(0)->getAttribute('src');
-        $this->toc[$label] = $src;
-      }
+      // Testcode
+      $this->spine = new Spine($dom);
+      $this->manifest = new Manifest($dom);
+      $this->metadata = new EpubMetadata($dom);
+      $this->guide = new Guide($dom);
+      $tocdom = new \DOMDocument();
+      $ncxpath = $this->path.$this->manifest->getItem('ncx')->href;
+      $tocdom->loadXML($zip->getFromName($ncxpath));
+      $this->toc = new TableOfContents($tocdom);
+      // set members
+      $this->title   = $this->metadata->getTitle();
+      $this->author  = implode(', ', $this->metadata->getAuthors());
+      $this->sortauthor = strtolower($this->author);
+      $this->tags = $this->metadata->getSubjects();
+      $this->summary = $this->metadata->getSummary();
+      //modify
+      $this->manifest->items['illustration'] = new ManifestItem('OEBPS/illu.png', 'illustration', 'image/png');
+      $this->metadata->setAuthors(['idot1', 'idot2']);
+      $this->metadata->setTitle('TITLE: ' . $this->metadata->getTitle());
+      $subjects = $this->metadata->getSubjects();
+      $subjects[] = 'fanfic';
+      $subjects[] = 'fandom';
+      $this->metadata->setSubjects($subjects);
+      $coverdata = new CoverData($this);
+      if (!$this->id) $this->create_id();
+      //new doc
+      $test = new DOMDocument('1.0');
+      $root = $test->createElementNS('http://www.idpf.org/2007/opf','package');
+      $root->setAttribute('unique-identifier', $uniqueid);
+      $root->setAttribute('version', $version);
+      $this->spine->writeElement($root, $test);
+      $this->manifest->writeElement($root, $test);
+      $this->metadata->writeElement($root, $test);
+      $this->guide->writeElement($root, $test);
+      $test->appendChild($root);
+      $test->formatOutput = true;
+      $test->preserveWhiteSpace = false;
       $zip->close();
       return $this;
     }else{
-      error_log('Opening Book zip failed');
+      error_log('Opening Book zip ' . $epub . ' / ' . $filepath . ' failed');
       return 'failed';
     }
   }
@@ -202,19 +203,23 @@ class Ebook extends MetaBook {
    * @return string
    */
   public function getChapter($idref) {
-    foreach($this->manifest as $id => $href) {
-      if ($id == $idref) {
-        $chapter = $href;
-      }
+    if (strpos('#', $idref) !== false) {
+      list($idref, $position) = explode('#', $idref);
     }
-    if (isset($chapter)){
+    $href = $this->manifest->getItem($idref)->href;
+    $navpoint = $this->toc->getById($idref);
+    if (!$href) {
+      $href = $navpoint->contentSrc;
+    }
+    if (isset($href)){
       $zip = new \ZipArchive;
       if ($zip->open($this->getFullFilePath())===TRUE){
-        $html = $zip->getFromName($this->path.$chapter);
+        $html = $zip->getFromName($this->path.$href);
       }
       $html = $this->injectStyle($html);
       $html = $this->injectBookTitle($html);
-      return $this->injectNavigation($html, $chapter);
+      $html = $this->fixImages($html, $navpoint);
+      return $this->injectNavigation($html, $navpoint);
     }
   }
 
@@ -224,27 +229,36 @@ class Ebook extends MetaBook {
    * @return mixed
    */
   public function getCover($binary = false) {
-    $coverpath = $this->manifest[$this->otherMeta['cover']];
-    $zip = new \ZipArchive();
-    if ($zip->open($this->getFullFilePath())===TRUE){
-      $cover = $zip->getFromName($this->path.$coverpath);
-    }
+    $coverdata = new CoverData($this);
+    $coverpath = $coverdata->coverPath;
     if ($binary) {
-      $data = base64_encode($cover);
+      $data = base64_encode($coverdata->getCoverImageData());
     }
+    if (!$data) $data = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
     return ($binary) ? "data:image/jpeg;base64,$data" : $this->path.$coverpath;
   }
 
   /**
    * Inject navigation links into chapter text
-   * @param  string $html
-   * @param  string $chapter
-   * @return mixed
+   * @param  string  $html
+   * @param  TocItem $navpoint
+   * @return string
    */
-  public function injectNavigation($html, $chapter) {
-    $tochead = $this->getFormattedToc() . $this->getNextPrev($chapter);
+  public function injectNavigation($html, $navpoint) {
+    $tochead = $this->getFormattedToc() . $this->getNextPrev($navpoint);
     $html = str_replace('<body>', $tochead, $html);
-    $html = str_replace('</body>', '</body>' .$this->getNextPrev($chapter), $html);
+    $html = str_replace('</body>', $this->getNextPrev($navpoint).'</body>', $html);
+    return $html;
+  }
+
+  /**
+   * Inject navigation links into chapter text
+   * // TODO: implement later
+   * @param  string  $html
+   * @param  TocItem $navpoint
+   * @return string
+   */
+  public function fixImages($html, $navpoint) {
     return $html;
   }
 
@@ -270,43 +284,39 @@ class Ebook extends MetaBook {
    */
   public function getFormattedToc($baseurl = '/index.php') {
     $ret = "<body class='read'><ul class='toc'>\n";
-    foreach($this->toc as $chaptername => $href) {
-      $ret .= "<li><a href='$baseurl/read/".$this->id."/".$this->lookup[$href]."'>$chaptername</a></li>";
+    foreach($this->toc->navpoints as $navpoint) {
+      $ret .= "<li><a href='$baseurl/read/".$this->id."/".$navpoint->id ."'> ";
+      $ret .= $navpoint->navLabel . "</a></li>";
     }
     $ret .= "</ul>";
     return $ret;
   }
 
   /**
-   * @param string $currenthref current url
-   * @param string $baseurl     base url
+   * // TODO: fix this for non-numeric playOrder.
+   * @param TocItem $navpoint current url
+   * @param string  $baseurl     base url
    * @return string
    */
-  public function getNextPrev($currenthref, $baseurl = '/index.php') {
-    $current = null;
-    $prev = null;
-    $next = null;
-    foreach($this->toc as $title => $href) {
-      $current = $href;
-      if($href == $currenthref) {
-        break;
-      }
-      $prev = $href;
+  public function getNextPrev($navpoint, $baseurl = '/index.php') {
+    $prev = $this->toc->getByPlayOrder($navpoint->playOrder - 1);
+    $prevposition = '';
+    if (strpos('#',$prev->contentSrc) !== 0) {
+      list($href, $prevposition) = \explode('#', $prev->contentSrc);
+      $prevposition = '#' . $prevposition;
     }
-    $current = '';
-    foreach($this->toc as $title => $href) {
-      $next = $href;
-      if($current == $currenthref) {
-        break;
-      }
-      $current = $href;
+    $next = $this->toc->getByPlayOrder($navpoint->playOrder + 1);
+    $nextposition = '';
+    if (strpos('#',$next->contentSrc) !== 0) {
+      list($href, $nextposition) = \explode('#', $next->contentSrc);
+      $nextposition = '#' . $nextposition;
     }
-    if (isset($prev)){
-      $link[] = "<a href='$baseurl/read/".$this->id."/".$this->lookup[$prev]."'>Previous Chapter</a>";
+    if ($prev){
+      $link[] = "<a href='$baseurl/read/".$this->id."/".$prev->id."$prevposition'>Previous Chapter</a>";
     }
-    $link[] = "<a href='$baseurl/show/".$this->id."/".$this->lookup[$href]."'>Index</a>";
-    if (isset($next)){
-      $link[] = "<a href='$baseurl/read/".$this->id."/".$this->lookup[$next]."'>Next Chapter</a>";
+    $link[] = "<a href='$baseurl/show/".$this->id."/'>Index</a>";
+    if ($next){
+      $link[] = "<a href='$baseurl/read/".$this->id."/".$next->id."$nextposition'>Next Chapter</a>";
     }
     return '<div class="nextprev">'.implode(' | ', $link) . '</div>';
   }
@@ -316,44 +326,42 @@ class Ebook extends MetaBook {
    * @return string
    */
   public function modify_meta() {
+    $this->metadata->setAuthors(explode(', ', $this->author));
+    $this->metadata->setSubjects($this->tags);
+    $this->metadata->setTitle($this->title);
+    $this->metadata->setSummary($this->summary);
     $zip = new \ZipArchive;
-    if ($zip->open($this->file) === TRUE) {
-      $fileToModify = $this->get_metafile($zip);
-      //Read contents into memory
-      $oldContents = $zip->getFromName($fileToModify);
-      //Modify contents:
-      $meta = $this->allmeta->getElementsByTagName('metadata')->item(0);
-      $meta->getElementsByTagName('creator')->item(0)->nodeValue = $this->author;
-      $meta->getElementsByTagName('title')->item(0)->nodeValue =  $this->title;
-      $summary = $meta->getElementsByTagName('description')->item(0);
-      if (!$summary) {
-        $meta->appendChild($this->allmeta->createElementNS('http://purl.org/dc/elements/1.1/', 'dc:description', $this->summary));
-      } else {
-        $summary->nodeValue =  $this->summary;
-      }
-      //tags
-      $taglist = $meta->getElementsByTagName('subject');
-      while($taglist->length > 0) {
-        $meta->removeChild($taglist->item(0));
-      }
-      foreach($this->tags as $id => $tag) {
-        $meta->appendChild($this->allmeta->createElementNS('http://purl.org/dc/elements/1.1/', 'dc:subject', trim($tag)));
-      }
-      foreach($this->otherMeta as $name => $value) {
-        $metaelement = $this->allmeta->createElement('meta');
-        $metaelement->setAttribute('name', $name);
-        $metaelement->setAttribute('value', $value);
-        $meta->appendChild($metaelement);
-      }
+    if ($zip->open($this->getFullFilePath()) === TRUE) {
 
-      $newContents = $this->prettyprint($this->allmeta)->saveXML();
+      $fileToModify = $this->get_metafile($zip);
+      $rootfile = $this->get_metafile($zip);
+      $path = dirname($rootfile);
+      $this->path = ($path != '.') ? $path . '/':'';
+      $dom = new \DOMDocument();
+      $dom->loadXML($zip->getFromName($rootfile));
+      $package = $dom->getElementsByTagName('package')->item(0);
+      $uniqueid = $package->getAttribute('unique-identifier');
+      $version = $package->getAttribute('version');
+      $newdom = new DOMDocument('1.0');
+      $root = $newdom->createElementNS('http://www.idpf.org/2007/opf','package');
+      $root->setAttribute('unique-identifier', $uniqueid);
+      $root->setAttribute('version', $version);
+      $this->spine->writeElement($root, $newdom);
+      $this->manifest->writeElement($root, $newdom);
+      $this->metadata->writeElement($root, $newdom);
+      $this->guide->writeElement($root, $newdom);
+      $newdom->appendChild($root);
+      $newdom->formatOutput = true;
+      $newdom->preserveWhiteSpace = false;
+
+      $newContents = $newdom->saveXML();
       //Delete the old...
       $zip->deleteName($fileToModify);
       //Write the new...
       $zip->addFromString($fileToModify, $newContents);
       //And write back to the filesystem.
       $zip->close();
-      return "ok: $newContents";
+      return "ok";
     } else {
       return 'failed';
     }
@@ -367,12 +375,18 @@ class Ebook extends MetaBook {
     return str_replace(['/', ',', ';'], ['_', '_'], $string);
   }
 
+  /**
+   * Update Cover
+   * @param  bool $generate generate new cover
+   * @return bool           success
+   */
   public function updateCover($generate = false) {
     $tmp = dirname(__DIR__) . '/tmp';
     $zip = new \ZipArchive();
     if (!$zip->open($this->getFullFilePath())===TRUE){
       return;
     }
+    return;
     $coverexists = ($this->otherMeta['cover']);
     if (!$coverexists || $generate) {
       $this->manifest['cover'] = 'OEBPS/images/cover.png';
@@ -381,6 +395,16 @@ class Ebook extends MetaBook {
       $item->setAttribute('href', 'OEBPS/images/cover.png');
       $item->setAttribute('id', 'cover');
       $item->setAttribute('media-type', "image/png");
+      // check for existing cover entry
+
+      $covers = $this->allmeta->getElementsByTagName('manifest')->item(0)->getElementsByTagName('item');
+      for ($i = $covers->length; --$i >= 0; ) {
+        $element = $covers->item($i);
+        if ($element->getAttribute('id') == 'cover') {
+          $element->parentNode->removeChild($el);
+        }
+      }
+
       $this->allmeta->getElementsByTagName('manifest')->item(0)->appendChild($item);
       $meta = $this->allmeta->createElement('meta');
       $meta->setAttribute('name', 'cover');
@@ -397,10 +421,10 @@ class Ebook extends MetaBook {
       $covergen .= ' -o ' . $tmp . '/cover.png';
       exec($covergen, $out, $return);
       if ($return === 0) {
-        if (!$zip->getFromName('OEBPS/images')) {
-          $zip->addEmptyDir('OEBPS/images');
+        if (!$zip->getFromName($this->path . 'images')) {
+          $zip->addEmptyDir($this->path . 'images');
         }
-        $zip->addFile("$tmp/cover.png", 'OEBPS/images/cover.png');
+        $zip->addFile("$tmp/cover.png", $this->path . 'images/cover.png');
       } else {
         \print_r($out);
       }
@@ -429,4 +453,26 @@ class Ebook extends MetaBook {
     $zip->addFile("$tmp/covernew.png", $coverpath);
   }
 
+  /**
+   * get a file's content from ebook zip
+   * @param  string $href href in zip
+   * @return string       data
+   */
+  public function getFromZip($href) {
+    $zip = new \ZipArchive();
+    if (!$zip->open($this->getFullFilePath())===TRUE){
+      return;
+    }
+    return $zip->getFromName($this->path.$href);
+  }
+
+  public function writeToZip($filename, $data) {
+    $zip = new \ZipArchive();
+    if ($zip->open($this->getFullFilePath())===TRUE){
+      $zip->deleteName($this->path.$filename);
+      $zip->addFromString($this->path.$filename, $data);
+      return true;
+    }
+    return false;
+  }
 }

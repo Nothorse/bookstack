@@ -4,27 +4,39 @@ namespace EBookLib;
  * MetaBook
  **/
 class MetaBook {
+
   /**
+   * Author
    * @var string
    */
   public $author;
+
   /**
+   * Author for sorting
    * @var string
    */
   public $sortauthor;
+
   /**
+   * Title
    * @var string
    */
   public $title;
+
   /**
+   * Summary
    * @var string
    */
   public $summary;
+
   /**
+   * md5Id uniqueid
    * @var string
    */
   public $id;
+
   /**
+   * Path to book
    * @var string
    */
   public $path;
@@ -36,10 +48,13 @@ class MetaBook {
   public $file;
 
   /**
+   * Tags (dc:subject)
    * @var array
    */
   public $tags;
+
   /**
+   * Update date in db
    * @var \DateTime
    */
   public $updated;
