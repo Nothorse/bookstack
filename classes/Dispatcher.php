@@ -28,7 +28,7 @@ class Dispatcher {
 
   /**
    * handle all requests
-   * @param string $path request path
+   * @param array $path request path
    */
   public function handleRequest($path) {
     $handler = 'handle'.$path[0];
@@ -38,7 +38,7 @@ class Dispatcher {
   /**
    * handler
    * @param Library $library   libray
-   * @param string  $path path
+   * @param array   $path path
    */
   public function handle($library, $path) {
     setcookie('booksel', '');
@@ -76,7 +76,7 @@ class Dispatcher {
 
   /**
    * @param Library $library   library
-   * @param string  $path path
+   * @param array   $path path
    */
   public function handleget($library, $path) {
     $book = $library->getBook($path[1]);
@@ -96,7 +96,7 @@ class Dispatcher {
 
   /**
    * @param Library $library   library
-   * @param string  $path path
+   * @param array   $path path
    */
   public function handleauthor($library, $path) {
     setcookie('booksel', 'author', 0, '/');
@@ -113,7 +113,7 @@ class Dispatcher {
 
   /**
    * @param Library $library   library
-   * @param string  $path path
+   * @param array   $path path
    */
   public function handletag($library, $path) {
     setcookie('booksel', 'tag', 0, '/');
@@ -129,7 +129,7 @@ class Dispatcher {
 
   /**
    * @param Library $library   library
-   * @param string  $path path
+   * @param array   $path path
    */
   public function handlemeta($library, $path) {
     $book = $library->getBook($path[1]);
@@ -141,7 +141,7 @@ class Dispatcher {
 
   /**
    * @param Library $library   library
-   * @param string  $path path
+   * @param array   $path path
    */
   public function handleshow($library, $path) {
     $book = $library->getBook($path[1]);
@@ -155,7 +155,7 @@ class Dispatcher {
   /**
    * Handler for update requests.
    * @param Library $library   library
-   * @param string  $path path
+   * @param array   $path path
    */
   public function handlerefresh($library, $path) {
     $book = $library->getBook($path[1]);
@@ -171,7 +171,7 @@ class Dispatcher {
   /**
    * Handler for download requests.
    * @param Library $library   library
-   * @param string  $path path
+   * @param array   $path path
    */
   public function handleadd($library, $path) {
     $log = $library->getLastLog();
@@ -181,10 +181,23 @@ class Dispatcher {
     echo $tpl->render([]);
     if (isset($_POST['url'])) {
       $url = $_POST['url'];
-      echo "Accepted URL " . $url . " for download.<hr />";
-      $library->logThis("Download queued for URL $url\n");
-      $library->queueThis($url);
+      if (strpos($url, 'http') !== false & \strlen($url) > 15) {
+        echo "Accepted URL " . $url . " for download.<br />";
+        $library->logThis("Download queued for URL $url\n");
+        $library->queueThis($url);
+      }
     }
+    if (isset($_FILES['newbook'])) {
+      $fileName = $_FILES['newbook']['name'];
+      $fileSize = $_FILES['newbook']['size'];
+      $fileTmpName  = $_FILES['newbook']['tmp_name'];
+      $fileType = $_FILES['newbook']['type'];
+      if ($fileType = 'application/epub+zip') {
+        move_uploaded_file($fileTmpName, BASEDIR . "/.incoming/$fileName");
+        echo "Moved $fileName to .incoming";
+      }
+    }
+    echo "<hr/>";
     echo "Last log entries:<br>";
     $this->display->printLog($log);
     echo "</div>";
@@ -193,7 +206,7 @@ class Dispatcher {
 
   /**
    * @param Library $library   library
-   * @param string  $path path
+   * @param array   $path path
    */
   public function handleedit($library, $path) {
   $book = $library->getBook($path[1]);
@@ -236,7 +249,7 @@ class Dispatcher {
 
   /**
    * @param Library $library   library
-   * @param string  $path path
+   * @param array   $path path
    */
   public function handleread($library, $path) {
     $book = $library->getBook($path[1]);
@@ -248,13 +261,33 @@ class Dispatcher {
 
   /**
    * @param Library $library   library
-   * @param string  $path path
+   * @param array   $path path
    */
   public function handledelete($library, $path) {
     $book = $library->getBook($path[1]);
     $library->deleteBook($book);
     header("Location: http://".SERVER.BASEURL);
     exit;
+  }
+
+  /**
+   * @param Library $library   library
+   * @param array   $path path
+   */
+  public function handlesearch($library, $path) {
+    if (isset($path[1])) {
+      $search = \SQLite3::escapeString($path[1]);
+      $where = "WHERE title like '%$search%' ";
+      $where .= "or author like '%$search%' ";
+      $where .= "or summary like '%$search%' ";
+      $where .= "or tag like '%$search%' ";
+      $list = $library->getBooklist('added desc', $where);
+      $this->display->printBookList($list, 'bookswide');
+    } else {
+      $list = $library->getBooklist('added desc', '', true);
+      $this->display->printBookList($list, 'bookswide');
+
+    }
   }
 
   /**
@@ -268,7 +301,7 @@ class Dispatcher {
 
   /**
    * List books by date
-   * @param  string  $path
+   * @param  array   $path
    * @param  Library $library
    * @param  bool    $limit
    * @return mixed
@@ -278,7 +311,7 @@ class Dispatcher {
   }
 
   /**
-   * @param string  $path request path
+   * @param array   $path request path
    * @param Library $library   Library
    * @return array
    */
@@ -287,7 +320,7 @@ class Dispatcher {
   }
 
   /**
-   * @param string  $path
+   * @param array   $path
    * @param Library $library
    * @return mixed
    */

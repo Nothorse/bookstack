@@ -16,7 +16,7 @@ class BrowserDisplay {
    */
   public function printBookList($list, $divid = 'list', $curid = null) {
     $time = microtime(true);
-    echo "<div id='$divid'><ul>";
+    echo "<div id='$divid'><ul id='booklist'>";
     $template = new Template('booklistentry');
     foreach($list as $book) {
       $current =($curid == $book->id) ? ' class="current"' : '';
