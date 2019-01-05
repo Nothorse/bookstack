@@ -35,6 +35,9 @@ class Library{
    */
   private function getdb($dbname = "library.sqlite") {
     $base= new \SQLite3($dbname);
+    $base->busyTimeout(5000);
+    $base->exec('PRAGMA journal_mode = wal;');
+
     if (!$base)
     {
       echo "SQLite NOT supported.\n";
@@ -379,18 +382,19 @@ class Library{
    */
   protected function bookQuery($order, $where, $limit)
   {
+    $this->logThis("where: " .$where);
     $time = microtime(true);
-    $lwhere = urldecode($where);
     $limstr = ($limit) ? " LIMIT 30" : '';
     $qry = "select title, author, sortauthor, file, summary, md5id, added, " .
       "group_concat(tag) " .
       "as tags from books" .
       " join taggedbooks on books.id = bookid " .
       " join tags on tagid = tags.id " .
-      " $lwhere " .
+      " $where " .
       " group by books.id" .
       " order by $order $limstr";
     $res = $this->db->query($qry);
+    $this->logThis($qry);
     global $debug;
     $debug["DB Select"] = microtime(true) - $time;
     return $res;

@@ -11,28 +11,33 @@
             window.location = '%%self%%';
             window.location.reload(true);
         }
-        function filterList() {
-            var input, filter, div, ul, li, a, i;
-            input = document.getElementById("myInput");
-            filter = input.value.toUpperCase();
-            div = document.getElementById("bookswide");
-            ul = div.getElementsByTagName('ul');
-            li = ul[0].getElementsByTagName("li");
-            for (i = 0; i < li.length; i++) {
-                a = li[i].getElementsByClassName("titlelink")[0];
-                if (filter.length > 2) {
-                    if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
-                        li[i].style.display = "";
-                        a.nextElementSibling.style.display = "block";
-                    } else {
-                        li[i].style.display = "none";
-                        a.nextElementSibling.style.display = "none";
-                    }
-                } else {
-                    li[i].style.display = "";
-                    a.nextElementSibling.style.display = "none";
-                }
+        function doSearch(url, replacediv) {
+          $.ajax({
+                url: url,
+                error: function() {
+                   var data = "<div class='error'>Something went wrong, maybe try again</div>";
+                   $('#booklist').before(data);
+                },
+                success: function(data) {
+                  replacediv.replaceWith(data);
+                },
+                type: 'GET'
+             });
+        }
+        function remoteFilter() {
+          var input, filter, url, searchRequest, replacediv;
+          input = $('#myInput');
+          replacediv = $('#bookswide');
+          filter = input.val().toUpperCase();
+          url = '/index.php/search/' + filter;
+          if (filter.length < 3) {
+            console.log('too short');
+            if (filter.length == 0) {
+              doSearch(url, replacediv);
             }
+          }
+          console.log("url: " +url);
+          doSearch(url, replacediv);
         }
         function toggleExpand(element) {
             var el = $(element).nextUntil(2)[1];
@@ -49,7 +54,7 @@
 <div id="bluebar">
     <div class="reloadbtn"><span onclick="reload()">🔁</span></div>
     <input type="search" id="myInput" results=5
-           autosave='filtersearch' onkeyup="filterList()" onblur="filterList()" onmouseup="filterList()"
+           autosave='filtersearch' onkeyup="remoteFilter()" onblur="remoteFilter()" onmouseup="remoteFilter()"
            placeholder="filter" />
     <ul>
       <li class="category">
