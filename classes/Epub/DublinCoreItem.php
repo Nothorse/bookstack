@@ -28,14 +28,10 @@ class DublinCoreItem {
    * Constructor
    * @param string $tag          tag
    * @param string $content      content
-   * @param array  $opfAttributes opf attribute
    */
-  public function __construct($tag, $content, $opfAttributes = null) {
+  public function __construct($tag, $content) {
     $this->tag = $tag;
     $this->content = $content;
-    if ($opfAttributes) {
-      $this->opfAttributes = $opfAttributes;
-    }
   }
 
   /**
@@ -54,10 +50,8 @@ class DublinCoreItem {
    */
   public function write($meta) {
     $element = $meta->createElement($this->tag, $this->content);
-    if (!empty($this->opfAttributes)) {
-      foreach ($this->opfAttributes as $attribute => $content) {
-        $element->setAttribute($attribute, $content);
-      }
+    foreach ($this->opfAttributes as $attribute => $content) {
+      $element->setAttribute($attribute, $content);
     }
     return $element;
   }
@@ -73,7 +67,6 @@ class DublinCoreItem {
       $element->nodeValue
     );
     if ($element->hasAttributes()) {
-      $attribute = $element->attributes->item(0);
       foreach ($element->attributes as $attribute) {
         $dcItem->setOpf($attribute->nodeName, $attribute->nodeValue);
       }

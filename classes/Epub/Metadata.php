@@ -77,8 +77,9 @@ class Metadata {
     }
     foreach ($authors as $key => $author) {
       $author = new DublinCoreItem(
-        'dc:creator', $author, 'role', 'aut'
+        'dc:creator', $author
       );
+      $author->setOpf('opf:role', 'aut');
       $this->dcItems[] = $author;
     }
   }
@@ -90,7 +91,7 @@ class Metadata {
   public function getAuthors() {
     $authors = [];
     foreach ($this->dcItems as $key => $item) {
-      if ($item->isAuthor())$authors[] = $item->getContent();
+      if ($item->isAuthor()) $authors[] = $item->getContent();
     }
     return $authors;
   }
