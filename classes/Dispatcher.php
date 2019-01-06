@@ -192,7 +192,7 @@ class Dispatcher {
       $fileSize = $_FILES['newbook']['size'];
       $fileTmpName  = $_FILES['newbook']['tmp_name'];
       $fileType = $_FILES['newbook']['type'];
-      if ($fileType = 'application/epub+zip') {
+      if ($fileType == 'application/epub+zip') {
         move_uploaded_file($fileTmpName, BASEDIR . "/.incoming/$fileName");
         echo "Moved $fileName to .incoming";
       }
