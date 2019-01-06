@@ -19,34 +19,32 @@ class DublinCoreItem {
   private $content;
 
   /**
-   * OPF attribute name [optional]
-   * @var string
+   * OPF attributes [optional]
+   * @var array
    */
-  private $opfAttribute;
-
-  /**
-   * OPF attribute content
-   * @var string
-   */
-  private $opfContent;
+  private $opfAttributes = [];
 
   /**
    * Constructor
    * @param string $tag          tag
    * @param string $content      content
-   * @param string $opfAttribute opf attribute
-   * @param string $opfContent   opf content
+   * @param array  $opfAttributes opf attribute
    */
-  public function __construct($tag, $content, $opfAttribute = null, $opfContent = null) {
+  public function __construct($tag, $content, $opfAttributes = null) {
     $this->tag = $tag;
     $this->content = $content;
-    if ($opfAttribute) $this->opfAttribute = $opfAttribute;
-    if ($opfContent) $this->opfContent = $opfContent;
+    if ($opfAttributes) {
+      $this->opfAttributes = $opfAttributes;
+    }
   }
 
+  /**
+   * set OPF Attributes
+   * @param string $attribute name
+   * @param string $content   content
+   */
   public function setOpf($attribute, $content) {
-    $this->opfAttribute = $attribute;
-    $this->opfContent = $content;
+    $this->opfAttributes[$attribute] = $content;
   }
 
   /**
@@ -56,8 +54,10 @@ class DublinCoreItem {
    */
   public function write($meta) {
     $element = $meta->createElement($this->tag, $this->content);
-    if ($this->opfAttribute) {
-      $element->setAttribute('opf:' . $this->opfAttribute, $this->opfContent);
+    if (!empty($this->opfAttributes)) {
+      foreach ($this->opfAttributes as $attribute => $content) {
+        $element->setAttribute($attribute, $content);
+      }
     }
     return $element;
   }
@@ -74,7 +74,9 @@ class DublinCoreItem {
     );
     if ($element->hasAttributes()) {
       $attribute = $element->attributes->item(0);
-      $dcItem->setOpf($attribute->name, $attribute->value);
+      foreach ($element->attributes as $attribute) {
+        $dcItem->setOpf($attribute->nodeName, $attribute->nodeValue);
+      }
     }
     return $dcItem;
   }
@@ -84,7 +86,7 @@ class DublinCoreItem {
    * @return bool [description]
    */
   public function isAuthor() {
-    return $this->tag == 'dc:creator' && $this->opfContent == 'aut';
+    return $this->tag == 'dc:creator' && $this->opfAttributes['opf:role'] == 'aut';
   }
 
   /**
