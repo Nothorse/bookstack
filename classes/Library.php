@@ -8,6 +8,17 @@ require_once(dirname(__DIR__) . "/config.php");
 class Library{
 
   /**
+   * standard log level
+   * @var int
+   */
+  const NORMAL = 1;
+
+  /**
+   * debug log level
+   * @var int
+   */
+  const DEBUG  = 2;
+  /**
    * database sqlite file
    * @var \SQLite3;
    */
@@ -382,7 +393,7 @@ class Library{
    */
   protected function bookQuery($order, $where, $limit)
   {
-    $this->logThis("where: " .$where);
+    $this->logThis("where: " .$where, 2);
     $time = microtime(true);
     $limstr = ($limit) ? " LIMIT 30" : '';
     $qry = "select title, author, sortauthor, file, summary, md5id, added, " .
@@ -394,7 +405,7 @@ class Library{
       " group by books.id" .
       " order by $order $limstr";
     $res = $this->db->query($qry);
-    $this->logThis($qry);
+    $this->logThis($qry, 2);
     global $debug;
     $debug["DB Select"] = microtime(true) - $time;
     return $res;
@@ -402,12 +413,13 @@ class Library{
 
   /**
    * logger into database.
-   * @param  string $msg log this
+   * @param  string $msg   log this
+   * @param  int    $level loglevel
    * @return bool        worked
    */
-  public function logThis($msg) {
-     $query = "INSERT INTO activitylog (entry) VALUES ('" .
-       \SQLite3::escapeString($msg) . "')";
+  public function logThis($msg, $level = 1) {
+     $query = "INSERT INTO activitylog (entry, level) VALUES ('" .
+       \SQLite3::escapeString($msg) . "', $level)";
      $this->db->exec($query);
   }
 
@@ -427,8 +439,9 @@ class Library{
    * @param  int    $limit limit
    * @return array         array datestamp=>logentry
    */
-  public function getLastLog($limit = 20) {
-    $qry = "select datestamp, entry from activitylog order by datestamp desc";
+  public function getLastLog($limit = 20, $level = 1) {
+    $qry = "select datestamp, entry from activitylog where level <= $level " .
+           "order by datestamp desc";
     $qry .= ($limit) ? " limit 30" : '';
     $loglines = $this->db->query($qry);
     $result = [];
