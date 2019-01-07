@@ -2,8 +2,8 @@
 <?php
 namespace EBookLib;
 define('SHELL', true);
-require_once(__DIR__ . "/config.php");
-require __DIR__ . "/vendor/autoload.php";
+require_once(dirname(__DIR__) . "/config.php");
+require dirname(__DIR__) . "/vendor/autoload.php";
 
 /**
  * Command line script ot add book
@@ -28,7 +28,6 @@ class AddBook extends CommandLine {
    */
   public function main() {
     global $argv;
-    $log = __DIR__ . "/tmp/ebooklib.log";
     $file = $this->getArgument('FILE');
     $lib = new Library();
     if($file && file_exists($file) && strpos($file, '.epub') > 0) {
