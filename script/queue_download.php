@@ -5,10 +5,10 @@
  * Use as cronjob.
  * remember to copy your personal.ini into the ebooklib dir
  */
-require __DIR__ . "/vendor/autoload.php";
-require __DIR__ . '/config.php';
+require dirname(__DIR__) . "/vendor/autoload.php";
+require dirname(__DIR__) . '/config.php';
 use EBookLib\Library as Library;
-$LOGFILE = __DIR__ . '/tmp/fff_error.log';
+$LOGFILE = dirname(__DIR__) . '/tmp/fff_error.log';
 $db = new Library();
 $entry = $db->getQueue();
 $toBequeued = '"' . $entry . '"';
