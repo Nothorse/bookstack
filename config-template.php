@@ -2,7 +2,6 @@
 define('TRASH', '<path>');
 define('BASEDIR', '<path>');
 define('BASEURL', '/index.php');
-define('ODPS', 9999);
 define('HTML', 8080);
 define('FFF', "/path/to/fanficfare");
 define('COVERGEN', "/path/to/tenprintcover.py or equiv");
