@@ -60,6 +60,12 @@ class MetaBook {
   public $updated;
 
   /**
+   * series information
+   * @var array
+   */
+  public $series;
+
+  /**
    * Create md5 id.
    */
   public function create_id()
@@ -104,6 +110,22 @@ class MetaBook {
    */
   public function getFullFilePath() {
     return BASEDIR . '/' . $this->file;
+  }
+
+  /**
+   * getter for series name
+   * @return string name
+   */
+  public function getSeriesName() {
+    return $this->series[0];
+  }
+
+  /**
+   * get volume of series
+   * @return int volume no.
+   */
+  public function getSeriesVolume() {
+    return $this->series[1];
   }
 
 }

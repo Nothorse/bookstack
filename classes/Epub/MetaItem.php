@@ -73,4 +73,20 @@ class MetaItem {
     $this->content = $content;
   }
 
+  /**
+   * is part of a series
+   * @return bool
+   */
+  public function isSeries() {
+    return $this->name == 'calibre:series';
+  }
+
+  /**
+   * is a volume of a series
+   * @return bool
+   */
+  public function isSeriesVolume() {
+    return $this->name == 'calibre:series_index';
+  }
+
 }
