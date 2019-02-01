@@ -106,6 +106,7 @@ class Ebook extends MetaBook {
       $this->sortauthor = strtolower($this->author);
       $this->tags = $this->metadata->getSubjects();
       $this->summary = $this->metadata->getSummary();
+      $this->series = $this->metadata->getSeries();
       //modify
       if (!$this->id) $this->create_id();
       $zip->close();
