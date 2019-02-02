@@ -99,14 +99,11 @@ class Dispatcher {
    * @param array   $path path
    */
   public function handleauthor($library, $path) {
-    setcookie('booksel', 'author', 0, '/');
     list($discard,$method, $author) = explode('/', $_SERVER['PATH_INFO']);
-    setcookie('selval', $author, 0, '/');
     $list = $library->getBookList('added desc', 'where author = \'' . \SQLite3::escapeString($path[1]) . '\'');
     $this->display->printHeader();
     $alist = $this->listdir_by_author($path, $library);
-    $this->display->printAuthorList($alist, 'author', $author);
-    if ($author) $this->display->printBookList($list, 'books');
+    if ($author) $this->display->printBookList($list, 'bookswide');
     $this->display->printFooter();
     exit;
   }
@@ -217,7 +214,7 @@ class Dispatcher {
   if (isset($_POST['editactive'])) {
     $book->title = (isset($_POST['title'])) ? $_POST['title']:$book->title;
     $book->author = (isset($_POST['author'])) ? $_POST['author']:$book->author;
-    $book->sortauthor = (isset($_POST['author'])) ? strtolower($_POST['author']):$book->sortauthor;
+    $book->sortauthor = (isset($_POST['author'])) ? strtolower($_POST['author']) : $book->sortauthor;
     if (isset($_FILES['illu'])) {
       $fileName = $_FILES['illu']['name'];
       $fileSize = $_FILES['illu']['size'];

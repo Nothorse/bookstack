@@ -145,6 +145,7 @@ class BrowserDisplay {
     $data['editurl'] = "http://".SERVER.BASEURL."/edit/".$book->id.'/'.$book->title;
     $data['deleteurl'] = "http://".SERVER.BASEURL."/delete/".$book->id.'/'.$book->title;
     $data['refreshurl'] = "http://".SERVER.BASEURL."/refresh/".$book->id.'/'.$book->title;
+    $data['authorurl'] = "http://".SERVER.BASEURL."/author/".$book->author;
     $data['toc'] = $book->getFormattedToc("http://".SERVER.BASEURL);
     $data['finder'] = "ebooklib://at.grendel.ebooklib?" . $book->getFullFilePath();
     $data['title'] = $book->title;
