@@ -6,7 +6,5 @@ define('SHELL', false);
 $index = new EBookLib\Dispatcher();
 $path = (isset($_SERVER['PATH_INFO'])) ? explode('/', trim($_SERVER['PATH_INFO'], '/')) : array('');
 $time = microtime(true);
-$index->handleRequest($path);
-$fulltime = microtime(true) - $time;
-$debug['All done'] = $fulltime;
+$index->handleRequest($path, $time);
 //print_r($debug);

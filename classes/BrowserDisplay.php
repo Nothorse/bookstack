@@ -106,9 +106,10 @@ class BrowserDisplay {
    * print footer of page
    * @return string html code
    */
-  public function printFooter() {
+  public function printFooter($time) {
     $tpl = new Template('footer');
-    echo $tpl->render(['foot' => true]);
+    $fulltime = round((microtime(true) - $time) * 1000, 3);
+    echo $tpl->render(['foot' => true, 'time' => $fulltime]);
   }
 
 
@@ -174,32 +175,10 @@ class BrowserDisplay {
     $data['summary'] = $book->summary;
     $data['tags'] = $book->taglist();
     $data['author'] = $book->author;
-    $data['backurl'] = "http://".SERVER.BASEURL."/show/".$book->id.'/'.$book->title;
+    $data['seriesname'] = $book->getSeriesName();
+    $data['seriesvol'] = $book->getSeriesVolume();
+  $data['backurl'] = "http://".SERVER.BASEURL."/show/".$book->id.'/'.$book->title;
     return $form->render($data);
-  }
-
-  /**
-   * old print footer
-   * @deprecated superseeded by printFooter
-   * @return string html
-   */
-  public function printFoot() {
-    $time = microtime(true);
-    $foot = <<<EOT
-  <script type="text/javascript" language="javascript" charset="utf-8">
-  var pos = $('#list li.current').position().top;
-  pos = pos - 100;
-  $('#list').scrollTop(pos);
-  var pos = $('#books li.current').position().top;
-  //pos = pos - 100;
-  $('#books').scrollTop(pos);
-  </script>
-  </body>
-  </html>
-EOT;
-    echo $foot;
-    global $debug;
-    $debug['Rendertime'] = microtime(true) - $time;
   }
 
   /**

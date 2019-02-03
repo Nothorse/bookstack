@@ -36,7 +36,7 @@ class MetaBook {
   public $id;
 
   /**
-   * Path to book
+   * Path to book files in zip
    * @var string
    */
   public $path;
