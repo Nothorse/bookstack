@@ -410,6 +410,7 @@ class Ebook extends MetaBook {
     if ($zip->open($this->getFullFilePath())===TRUE){
       $zip->deleteName($this->path.$filename);
       $zip->addFromString($this->path.$filename, $data);
+      $zip->close();
       return true;
     }
     return false;

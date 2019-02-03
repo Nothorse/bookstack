@@ -31,7 +31,7 @@ class Guide {
       $itemlist = $guide->getElementsByTagName('reference');
       for ($i = 0; $i < $itemlist->length; $i++) {
         $element = $itemlist->item($i);
-        $this->items[$element->getAttribute('id')] = GuideItem::parseElement($element);
+        $this->items[$element->getAttribute('type')] = GuideItem::parseElement($element);
       }
     }
   }
@@ -52,6 +52,17 @@ class Guide {
     }
     $root->appendChild($guide);
 
+  }
+
+  /**
+   * get guide item by id
+   * @param  string $id type of item
+   * @return GuideItem
+   */
+  public function getItem($id) {
+    foreach ($this->items as $key => $item) {
+      if ($item->type == $id) return $item;
+    }
   }
 
 

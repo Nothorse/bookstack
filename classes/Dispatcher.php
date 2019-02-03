@@ -18,6 +18,12 @@ class Dispatcher {
   private $display;
 
   /**
+   * microtime request
+   * @var int
+   */
+  private $time;
+
+  /**
    * Dispatcher constructor.
    */
   public function __construct() {
@@ -29,8 +35,10 @@ class Dispatcher {
   /**
    * handle all requests
    * @param array $path request path
+   * @param int   $time microtime
    */
-  public function handleRequest($path) {
+  public function handleRequest($path, $time) {
+    $this->time = $time;
     $handler = 'handle'.$path[0];
     $this->$handler($this->library, $path);
   }
@@ -71,7 +79,7 @@ class Dispatcher {
         $list = $this->listdir_by_date($path, $library, 20);
         $this->display->printBookList($list, 'bookswide');
     }
-    $this->display->printFooter();
+    $this->display->printFooter($this->time);
   }
 
   /**
@@ -104,7 +112,7 @@ class Dispatcher {
     $this->display->printHeader();
     $alist = $this->listdir_by_author($path, $library);
     if ($author) $this->display->printBookList($list, 'bookswide');
-    $this->display->printFooter();
+    $this->display->printFooter($this->time);
     exit;
   }
 
@@ -120,7 +128,7 @@ class Dispatcher {
     $alist = $library->getTagList(false);
     $this->display->printAuthorList($alist, 'tag', $path[1]);
     if ($path[1]) $this->display->printBookList($list, 'books');
-    $this->display->printFoot();
+    $this->display->printFooter($this->time);
     exit;
   }
 
@@ -145,7 +153,7 @@ class Dispatcher {
     $this->display->printHeader();
     $book->get_meta();
     echo $this->display->showDetails($book);
-    $this->display->printFoot();
+    $this->display->printFooter($this->time);
     exit;
   }
 
@@ -161,7 +169,7 @@ class Dispatcher {
     $this->display->printHeader();
     $book->get_meta();
     echo $this->display->showDetails($book);
-    $this->display->printFoot();
+    $this->display->printFooter($this->time);
     exit;
   }
 
@@ -198,7 +206,7 @@ class Dispatcher {
     echo "Last log entries:<br>";
     $this->display->printLog($log);
     echo "</div>";
-    $this->display->printFooter();
+    $this->display->printFooter($this->time);
   }
 
   /**
@@ -240,7 +248,7 @@ class Dispatcher {
     }
     echo (isset($_POST['editactive'])) ? $this->display->showDetails($book) :
       $this->display->getEditForm($book, $url);
-    $this->display->printFoot();
+    $this->display->printFooter($this->time);
     exit;
   }
 
