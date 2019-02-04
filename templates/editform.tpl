@@ -41,12 +41,22 @@
           font-style: normal;
           font-weight: normal;
         }
+        input.sname {
+          width: 60%;
+          display: inline-block;
+        }
+        input.svolume {
+          width: 15%;
+          display: inline-block;
+        }
         -->
     </style>
     <form action="$url" method="post" enctype="multipart/form-data">
         <input type="hidden" name="editactive" value="1">
         <label>Title: <input type="text" name="title" value="%%title%%"></label>
         <label>Author: <input type="text" name="author" value="%%author%%"></label>
+        <label>Series: <br><input class="sname" type="text" name="seriesname" value="%%seriesname%%"> |
+          <input class="svolume" type="text" name="series_volume" value="%%seriesvol%%"></label>
         <label>Tags: <textarea name="tags">%%tags%%</textarea></label>
         <label>Summary: <textarea name="summary">%%summary%%</textarea></label>
         <label>Coverimage: <input type="file" name="illu"></label>

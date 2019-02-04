@@ -1,6 +1,8 @@
 <?php
 namespace EBookLib;
 
+use SQLite3;
+
 require_once(dirname(__DIR__) . "/config.php");
 /**
  * Base class for sqlite interaction with schema and queries.
@@ -35,7 +37,6 @@ class Library{
     }
     $time = microtime(true);
     $this->db = $this->getdb($db);
-    $this->checkTables();
     $debug['library startup'] = microtime(true) - $time;
   }
 
@@ -60,67 +61,6 @@ class Library{
     }
   }
 
-  /**
-   * utility method to create or modify all sqlite tables.
-   * @return bool result
-   */
-  private function checkTables() {
-    return true;
-    $q=$this->db->query("PRAGMA table_info(books)");
-    if ($q->fetchArray() < 1) {
-        if (!$this->db->exec("
-            CREATE TABLE books (
-                id INTEGER NOT NULL PRIMARY KEY,
-                title VARCHAR ( 255 ) NOT NULL,
-                author VARCHAR(255) NOT NULL,
-                sortauthor VARCHAR(255) NOT NULL,
-                file VARCHAR(255) NOT NULL,
-                summary TEXT,
-                md5id varchar(255) NOT NULL UNIQUE,
-                added timestamp NOT NULL
-                )")
-        ) exit ("Create SQLite Database Error\n");
-    }
-    $q=$this->db->query("PRAGMA table_info(tags)");
-    if ($q->fetchArray() < 1) {
-        if (!$this->db->exec("
-            CREATE TABLE tags (
-                id INTEGER NOT NULL PRIMARY KEY,
-                tag VARCHAR ( 255 ) NOT NULL UNIQUE
-                )")
-        ) exit ("Create SQLite Database Error\n");
-    }
-    $q=$this->db->query("PRAGMA table_info(taggedbooks)");
-    if ($q->fetchArray() < 1) {
-        if (!$this->db->exec("
-            CREATE TABLE taggedbooks (
-                bookid INTEGER NOT NULL,
-                tagid  INTEGER NOT NULL
-                )")
-        ) exit ("Create SQLite Database Error\n");
-    }
-    $q=$this->db->query("PRAGMA table_info(activitylog)");
-    if ($q->fetchArray() < 1) {
-        if (!$this->db->exec("
-            CREATE TABLE activitylog (
-                logid INTEGER NOT NULL PRIMARY KEY,
-                datestamp  TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                entry TEXT NOT NULL
-                )")
-        ) exit ("Create SQLite Database Error\n");
-    }
-    $q=$this->db->query("PRAGMA table_info(downloadqueue)");
-    if ($q->fetchArray() < 1) {
-        if (!$this->db->exec("
-            CREATE TABLE downloadqueue (
-                queueid INTEGER NOT NULL PRIMARY KEY,
-                datestamp  TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                entry VARCHAR(255) NOT NULL,
-                done INTEGER DEFAULT 0 NOT NULL
-                )")
-        ) exit ("Create SQLite Database Error\n");
-    }
-  }
 
   /**
    * insert metadata of book into db
@@ -148,6 +88,7 @@ class Library{
     $res = $this->db->query($qry);
     $row = $res->fetcharray();
     $bookid = $row['id'];
+    // Tags
     $success = $success && $this->db->exec("DELETE FROM taggedbooks WHERE bookid = '$bookid'");
     if (empty($ebook->tags)) $ebook->tags[] = 'untagged';
     foreach($ebook->tags as $id => $tag) {
@@ -160,6 +101,7 @@ class Library{
       }
       $success = $success && $this->db->exec("INSERT INTO taggedbooks (bookid, tagid) values ('$bookid', '$tagid')");
     }
+    $success = $this->updateSeries($ebook, $success);
     return ($success) ? true : $this->db->lastErrorCode();
   }
 
@@ -188,6 +130,7 @@ class Library{
       }
       $this->db->exec("INSERT INTO taggedbooks (bookid, tagid) values ('$bookid', '$tagid')");
     }
+    $success = $this->updateSeries($ebook, true);
   }
 
   /**
@@ -206,6 +149,7 @@ class Library{
     $book->file = $row['file'];
     $book->summary = $row['summary'];
     $book->id = $row['md5id'];
+    $book->seriesId = $row['series_id'];
     $tagquery = "select tag from tags join taggedbooks on taggedbooks.tagid = tags.id where taggedbooks.bookid = '" . $row['id'] . "'";
     $tagres = $this->db->query($tagquery);
     while($tagrow = $tagres->fetchArray()) {
@@ -271,20 +215,16 @@ class Library{
 
   /**
    * get list of authors
-   * @param  string $order order by
-   * @return array         name, books
+   * @return array         id, name
    */
-  public function getAuthorlist($order = 'sortauthor asc') {
-    $booklist = array();
-    $qry = "select author, title, sortauthor from books order by $order";
+  public function getSerieslist() {
+    $serieslist = array();
+    $qry = "select id, name from series order by name";
     $res = $this->db->query($qry);
     while ($row = $res->fetchArray()) {
-      if(strlen($row['title']) > 0) {
-        $booklist[$row['author']]['name'] = $row['author'];
-        $booklist[$row['author']]['books'][] = $row['title'];
-      }
+      $serieslist[$row['id']] = $row['name'];
     }
-    return $booklist;
+    return $serieslist;
   }
 
   /**
@@ -470,6 +410,47 @@ class Library{
   public function setQueueEntryDone($entry) {
     $query = "UPDATE downloadqueue SET done = 1 where entry = '$entry'";
     return $this->db->exec($query);
+  }
+
+  /**
+   * Update series information
+   * @param Ebook $ebook   ebook
+   * @param bool  $success return val
+   * @return bool
+   */
+  private function updateSeries($ebook, $success)
+  {
+    if ($ebook->getSeriesName() != '') {
+      $this->logThis('has series', 2);
+      $sqry = "select * from series";
+      $sres = $this->db->query($sqry);
+      $serieslist = array();
+      while ($row = $sres->fetchArray()) {
+          $serieslist[$row['id']] = $row['name'];
+      }
+      $done = false;
+      foreach ($serieslist as $key => $seriesname) {
+        if ($seriesname == $ebook->getSeriesName()) {
+          $ebook->seriesId = $key;
+          $updqry = "UPDATE books SET series_id = $key, " .
+                    "series_volume = " . $ebook->getSeriesVolume();
+          $success = $success && $this->db->exec($updqry);
+          $done = true;
+        }
+      }
+      if (!$done) {
+        $insert = "INSERT into series (name) values ('" . $ebook->getSeriesName() . "')";
+        $this->logThis($insert, 2);
+        $this->db->exec($insert);
+        $key = $this->db->querySingle("SELECT id from series WHERE name = '" . $ebook->getSeriesName() . "'");
+        $updqry = "UPDATE books SET series_id = $key, " .
+        "series_volume = " . $ebook->getSeriesVolume() .
+        " WHERE md5id = '" . $ebook->id . "'" ;
+        $this->logThis($updqry, 2);
+        $success = $success && $this->db->exec($updqry);
+      }
+    }
+    return $success;
   }
 
 }

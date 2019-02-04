@@ -103,6 +103,7 @@ class Dispatcher {
   }
 
   /**
+   * Get all books by an author
    * @param Library $library   library
    * @param array   $path path
    */
@@ -110,7 +111,21 @@ class Dispatcher {
     list($discard,$method, $author) = explode('/', $_SERVER['PATH_INFO']);
     $list = $library->getBookList('added desc', 'where author = \'' . \SQLite3::escapeString($path[1]) . '\'');
     $this->display->printHeader();
-    $alist = $this->listdir_by_author($path, $library);
+    if ($author) $this->display->printBookList($list, 'bookswide');
+    $this->display->printFooter($this->time);
+    exit;
+  }
+
+  /**
+   * get all books in a series
+   * @param Library $library   library
+   * @param array   $path path
+   */
+  public function handleseries($library, $path) {
+    list($discard,$method, $author) = explode('/', $_SERVER['PATH_INFO']);
+    $list = $library->getBookList('series_volume asc, added desc', 'where series_id = \'' . \SQLite3::escapeString($path[1]) . '\'');
+    $this->display->printHeader();
+    //$alist = $this->listdir_by_author($path, $library);
     if ($author) $this->display->printBookList($list, 'bookswide');
     $this->display->printFooter($this->time);
     exit;
@@ -222,6 +237,7 @@ class Dispatcher {
   if (isset($_POST['editactive'])) {
     $book->title = (isset($_POST['title'])) ? $_POST['title']:$book->title;
     $book->author = (isset($_POST['author'])) ? $_POST['author']:$book->author;
+    $book->series = (isset($_POST['seriesname'])) ? [$_POST['seriesname'], $_POST['series_volume']] : [];
     $book->sortauthor = (isset($_POST['author'])) ? strtolower($_POST['author']) : $book->sortauthor;
     if (isset($_FILES['illu'])) {
       $fileName = $_FILES['illu']['name'];

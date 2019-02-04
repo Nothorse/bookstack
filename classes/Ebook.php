@@ -295,6 +295,7 @@ class Ebook extends MetaBook {
     $this->metadata->setSubjects($this->tags);
     $this->metadata->setTitle($this->title);
     $this->metadata->setSummary($this->summary);
+    $this->metadata->setSeries($this->getSeriesName(), $this->getSeriesVolume());
     $zip = new \ZipArchive;
     if ($zip->open($this->getFullFilePath()) === TRUE) {
 
