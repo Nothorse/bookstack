@@ -66,6 +66,12 @@ class MetaBook {
   public $series;
 
   /**
+   * Series id
+   * @var int;
+   */
+  public $seriesId;
+
+  /**
    * Create md5 id.
    */
   public function create_id()
@@ -117,7 +123,7 @@ class MetaBook {
    * @return string name
    */
   public function getSeriesName() {
-    return $this->series[0];
+    return isset($this->series[0]) ? $this->series[0] : '' ;
   }
 
   /**
@@ -125,7 +131,7 @@ class MetaBook {
    * @return int volume no.
    */
   public function getSeriesVolume() {
-    return $this->series[1];
+    return isset($this->series[1]) ? $this->series[1] : 0 ;
   }
 
 }

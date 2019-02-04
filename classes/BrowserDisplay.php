@@ -44,34 +44,6 @@ class BrowserDisplay {
   }
 
   /**
-   * get a formatted list (currently unused)
-   * @method getFormattedList
-   * @param  string           $type author
-   * @return string                 unordered list html
-   */
-  public function getFormattedList($type = 'author') {
-    $db = new Library();
-    $list = $db->getAuthorList();
-    $formattedlist = "<ul>\n";
-    foreach($list as $author => $rec) {
-      $formattedlist .= "<li><a href=\"http://".SERVER.BASEURL."/$what/".$author['name']."/\">$author</a></li>\n";
-    }
-    $formattedlist .= '</ul>';
-    return $formattedlist;
-  }
-
-  /**
-   * [printAuthorList description]
-   * @method printAuthorList
-   * @param  array          $list  author list
-   * @param  string          $type type of list
-   * @return string                html code
-   */
-  public function printAuthorList($list, $type) {
-    return $this->getFormattedList();
-  }
-
-  /**
    * [listTags description]
    * @method listTags
    * @return [type]   [description]
@@ -147,6 +119,11 @@ class BrowserDisplay {
     $data['deleteurl'] = "http://".SERVER.BASEURL."/delete/".$book->id.'/'.$book->title;
     $data['refreshurl'] = "http://".SERVER.BASEURL."/refresh/".$book->id.'/'.$book->title;
     $data['authorurl'] = "http://".SERVER.BASEURL."/author/".$book->author;
+    $seriestpl = new Template('seriesdisplay');
+    $data['seriesurl'] = "http://".SERVER.BASEURL."/series/".$book->seriesId;
+    $data['seriesname'] = $book->getSeriesName();
+    $data['seriesvol'] = $book->getSeriesVolume();
+    $data['series'] = ($book->getSeriesName()) ? $seriestpl->render($data) : '';
     $data['toc'] = $book->getFormattedToc("http://".SERVER.BASEURL);
     $data['finder'] = "ebooklib://at.grendel.ebooklib?" . $book->getFullFilePath();
     $data['title'] = $book->title;
@@ -154,8 +131,6 @@ class BrowserDisplay {
     $data['tags'] = $book->taglist();
     $data['author'] = $book->author;
     $data['cover'] = $book->getCover(true);
-    $data['seriesname'] = $book->getSeriesName();
-    $data['seriesvol'] = $book->getSeriesVolume();
     $data['complete'] = (strpos($data['tags'], 'In-Progress') === false) ?
       ' complete' : '';
     $details = new Template('bookdetails');
@@ -177,7 +152,7 @@ class BrowserDisplay {
     $data['author'] = $book->author;
     $data['seriesname'] = $book->getSeriesName();
     $data['seriesvol'] = $book->getSeriesVolume();
-  $data['backurl'] = "http://".SERVER.BASEURL."/show/".$book->id.'/'.$book->title;
+    $data['backurl'] = "http://".SERVER.BASEURL."/show/".$book->id.'/'.$book->title;
     return $form->render($data);
   }
 
@@ -194,6 +169,14 @@ class BrowserDisplay {
       echo "</tr>";
     }
     echo "</table>";
+  }
+
+  private function getSeriesMenu($book) {
+    $db = new Library();
+    $serieslist = $db->getSeriesList();
+    foreach ($serieslist as $id => $series) {
+
+    }
   }
 
 }

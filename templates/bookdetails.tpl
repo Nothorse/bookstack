@@ -2,7 +2,7 @@
     %%toc%%
     <h1>%%title%%</h1>
     <h2><a href="%%authorurl%%">%%author%%</a></h2>
-    <p>Series: %%seriesname%% %%seriesvol%%</p>
+    %%series%%
     <p class="cover" style="float:left; margin:5px;"><img src="%%cover%%" style="width:100px;height:auto;"/></p>
     <p>%%summary%%</p>
     <p>%%tags%%</p>
