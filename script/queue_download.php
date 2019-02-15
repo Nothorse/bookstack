@@ -11,17 +11,23 @@ use EBookLib\Library as Library;
 $LOGFILE = dirname(__DIR__) . '/tmp/fff_error.log';
 $db = new Library();
 $entry = $db->getQueue();
-$toBequeued = '"' . $entry . '"';
-$basecmd = "nohup " . FFF . ' -c ' . __DIR__ . '/lib/ebooklib.ini ';
-$baseupdateflags = "--update-epub --update-cover ";
-$basecmdend = ' >> ' . $LOGFILE . ' 2>&1 &';
-$cmdtype = (strpos($toBequeued, 'http') === 0) ? '' : $baseupdateflags;
-if ($entry) {
-  // todo first check if a fanficfare process is running
-  $cmd = $basecmd . $cmdtype . $toBequeued . $basecmdend;
-  exec($cmd);
-  $db->setQueueEntryDone($entry);
-  $db->logThis("passed $toBequeued to fanficfare");
+if ($db->isBusy()) {
+  $db->logThis("FFF busy with " . $db->isBusy(), Library::DEBUG);
+  exit;
+} else {
+  $toBequeued = '"' . $entry . '"';
+  $basecmd = "nohup " . FFF . ' -c ' . __DIR__ . '/lib/ebooklib.ini ';
+  $baseupdateflags = "--update-epub --update-cover ";
+  $basecmdend = ' >> ' . $LOGFILE . ' 2>&1 &';
+  $cmdtype = (strpos($toBequeued, 'http') === 0) ? '' : $baseupdateflags;
+  if ($entry) {
+    // todo first check if a fanficfare process is running
+    $cmd = $basecmd . $cmdtype . $toBequeued . $basecmdend;
+    exec($cmd);
+    $db->setQueueEntryDone($entry);
+    $db->logThis("passed $toBequeued to fanficfare");
+    $db->setBusy($toBequeued);
+  }
 }
 // check .incoming dir in BASEDIR
 $incoming = BASEDIR . '/.incoming';

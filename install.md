@@ -3,7 +3,12 @@
 * create a library directory. can be anywhere.
 * copy config-template.php to config.php
 * fill out local values
-* point your webserver to the directory
+  * TRASH <- either /dev/null or a trash dir that you will need to empty out manually
+  * BASEDIR <- where you want your epub files to be placed
+  * BASEURL <- the URL where you can access the application
+* create a SQLite3 database:
+* ```sqlite3 <BASEDIR>/.library.db < rsrc/schema/schema.sql```
+* point your webserver to the BASEURL
 * enjoy
 
 To make upload and downloading via [fanficfare](https://github.com/JimmXinu/FanFicFare) work, add the following lines to your crontab and personal.ini:

@@ -453,4 +453,33 @@ class Library{
     return $success;
   }
 
+  /**
+   * set Busy flag and job
+   * @param string $job job that keeps busy
+   */
+  public function setBusy($job) {
+    $update = "UPDATE busy_flag set busy = 1, job = '$job'";
+    $this->db->exec($update);
+    $this->logThis($update, self::DEBUG);
+  }
+
+  /**
+   * unset busy flag
+   */
+  public function setFree() {
+    $update = "UPDATE busy_flag set busy = 0, job = ''";
+    $this->db->exec($update);
+    $this->logThis($update, self::DEBUG);
+  }
+
+  /**
+   * if busy flag is set, return job
+   * @return bool|string job or false
+   */
+  public function isBusy() {
+    $qry = "select job from busy_flag where busy = 1";
+    $res = $this->db->querySingle($qry);
+    return ($res) ? $res : false;
+  }
+
 }

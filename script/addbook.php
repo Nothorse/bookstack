@@ -38,6 +38,7 @@ class AddBook extends CommandLine {
       $growl = str_ireplace(array("'", '"', ';'), '', $book->title) . " by " . $book->author;
       $result = $lib->insertBook($book);
       $lib->logThis("Added book $growl (" . $book->getFullFilePath() . ')');
+      $lib->setFree();
       return true;
     } else {
       echo "No ebook given.\n";
