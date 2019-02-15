@@ -14,3 +14,7 @@ The perfect scenario is use on a home server (I use a Raspberry Pi), with the bo
 ## Installation ##
 
 see [install.md](install.md)
+
+## License ##
+
+see [LICENSE](LICENSE)

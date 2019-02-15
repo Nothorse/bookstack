@@ -7,7 +7,7 @@ CREATE TABLE books (
                 summary TEXT,
                 md5id varchar(255) NOT NULL UNIQUE,
                 series_id INTEGER,
-                series_volume DECIMAL(5,2)
+                series_volume DECIMAL(5,2),
                 added timestamp NOT NULL
                 );
 CREATE TABLE tags (
@@ -33,3 +33,8 @@ CREATE TABLE series (
   id INTEGER NOT NULL PRIMARY KEY,
   name VARCHAR(255) NOT NULL
 );
+CREATE TABLE busy_flag (
+  busy INTEGER,
+  job  TEXT
+);
+INSERT INTO busy_flag VALUES (0, '');
