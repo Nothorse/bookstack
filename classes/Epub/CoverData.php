@@ -11,6 +11,7 @@ class CoverData {
    * @var Ebook
    */
   private $ebook;
+
   /**
    * imagepath
    * @var string
@@ -19,6 +20,7 @@ class CoverData {
 
   public $coverId;
 
+  public $coverimage;
   public $coverpage;
 
   public $coverpageId;

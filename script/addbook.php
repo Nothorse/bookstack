@@ -33,8 +33,6 @@ class AddBook extends CommandLine {
     if($file && file_exists($file) && strpos($file, '.epub') > 0) {
       $book = new Ebook($file);
       $book->file = $book->cleanupFile($file);
-      //$growl  = "/usr/local/bin/terminal-notifier ";
-      //$growl .= " -n 'Giles (Ebooklib)' ";
       $growl = str_ireplace(array("'", '"', ';'), '', $book->title) . " by " . $book->author;
       $result = $lib->insertBook($book);
       $lib->logThis("Added book $growl (" . $book->getFullFilePath() . ')');

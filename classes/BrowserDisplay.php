@@ -30,7 +30,7 @@ class BrowserDisplay {
           'summary' => $book->trunc_summary(250),
           'finder' => "ebooklib://at.grendel.ebooklib?" . $book->getFullFilePath(),
           'show' => $this->getproto()."://".SERVER.BASEURL."/show/".$book->id."/".$book->title,
-          'download' => $this->getproto()."://".SERVER.BASEURL."/get/".$book->id.'/'.$book->title . '.epub',
+          'download' => $this->getproto()."://".SERVER.BASEURL."/get/".$book->id.'/'. $book->file,
         );
         $data['complete'] = (strpos($data['tags'], 'In-Progress') === false) ?
           ' complete' : '';
@@ -114,7 +114,7 @@ class BrowserDisplay {
    */
   public function showDetails($book, $protocol = 'http') {
     $data = array();
-    $data['geturl'] = "$protocol://".SERVER.BASEURL."/get/".$book->id.'/'.$book->title . '.epub';
+    $data['geturl'] = "$protocol://".SERVER.BASEURL."/get/".$book->id.'/'.$book->file;
     $data['editurl'] = "http://".SERVER.BASEURL."/edit/".$book->id.'/'.$book->title;
     $data['deleteurl'] = "http://".SERVER.BASEURL."/delete/".$book->id.'/'.$book->title;
     $data['refreshurl'] = "http://".SERVER.BASEURL."/refresh/".$book->id.'/'.$book->title;
