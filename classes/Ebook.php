@@ -97,7 +97,12 @@ class Ebook extends MetaBook {
       $this->metadata = new EpubMetadata($dom);
       $this->guide = new Guide($dom);
       $tocdom = new \DOMDocument();
-      $ncxpath = $this->path.$this->manifest->getItem('ncx')->href;
+      //defensive programming
+      $ncxitem = $this->manifest->getItem('ncx');
+      if (!$ncxitem) $ncxitem = $this->manifest->getItem('toc');
+      if ($ncxitem) {
+        $ncxpath = $this->path.$ncxitem->href;
+      }
       $tocdom->loadXML($zip->getFromName($ncxpath));
       $this->toc = new TableOfContents($tocdom);
       // set members
@@ -170,10 +175,14 @@ class Ebook extends MetaBook {
     if (strpos('#', $idref) !== false) {
       list($idref, $position) = explode('#', $idref);
     }
-    $href = $this->manifest->getItem($idref)->href;
+    $navItem = $this->manifest->getItem($idref);
+    $href = ($navItem) ? $navItem->href : false;
     $navpoint = $this->toc->getById($idref);
     if (!$href) {
       $href = $navpoint->contentSrc;
+    }
+    if (strpos($href, '#') !== false) {
+      $href = substr($href, 0, strpos($href, '#'));
     }
     if (isset($href)){
       $zip = new \ZipArchive;

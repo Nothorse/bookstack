@@ -160,9 +160,9 @@ class Metadata {
   }
 
   /**
-  * setter for cover tag
-  * @param string $coverId Cover id
-  */
+   * setter for cover tag
+   * @param string $coverId Cover id
+   */
   public function setCover($coverId) {
     $exists = false;
     foreach ($this->metaItems as $key => $item) {

@@ -60,4 +60,7 @@ class ManifestItem {
     return $item;
   }
 
+  public function __toString() {
+    return $this->href . ' -- ' . $this->id . ' -- ' . $this->mediatype;
+  }
 }

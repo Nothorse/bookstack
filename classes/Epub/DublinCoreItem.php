@@ -6,6 +6,9 @@ namespace EBookLib\Epub;
  */
 class DublinCoreItem {
 
+  const OPF = 'http://www.idpf.org/2007/opf';
+  const DC  = 'http://purl.org/dc/elements/1.1/';
+
   /**
    * Tag
    * @var string
@@ -24,14 +27,18 @@ class DublinCoreItem {
    */
   private $opfAttributes = [];
 
+  private $opfPrefix;
+
   /**
    * Constructor
    * @param string $tag          tag
    * @param string $content      content
+   * @param string $opfNamespace namespace prefix
    */
-  public function __construct($tag, $content) {
+  public function __construct($tag, $content, $opfPrefix = 'opf') {
     $this->tag = $tag;
     $this->content = $content;
+    $this->$opfPrefix = $opfPrefix;
   }
 
   /**
@@ -68,6 +75,8 @@ class DublinCoreItem {
     );
     if ($element->hasAttributes()) {
       foreach ($element->attributes as $attribute) {
+        $opfPrefix = $element->lookupPrefix(self::OPF);
+        if ($opfPrefix) $dcItem->setOpfPrefix($optPrefix);
         $dcItem->setOpf($attribute->nodeName, $attribute->nodeValue);
       }
     }
@@ -79,7 +88,16 @@ class DublinCoreItem {
    * @return bool [description]
    */
   public function isAuthor() {
-    return $this->tag == 'dc:creator' && $this->opfAttributes['opf:role'] == 'aut';
+    $rolekey = ($this->opfPrefix) ? $this->opfPrefix . ':role' : 'role';
+    if ($this->tag == 'dc:creator') {
+      if (isset($this->opfAttributes[$rolekey]) && $this->opfAttributes[$rolekey] == 'aut') {
+        return true;
+      }
+      if (!array_key_exists($rolekey, $this->opfAttributes)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -120,5 +138,9 @@ class DublinCoreItem {
    */
   public function setContent($content) {
     $this->content = $content;
+  }
+
+  public function setOpfPrefix($prefix) {
+    $this->opfPrefix = $prefix;
   }
 }

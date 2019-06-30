@@ -47,6 +47,7 @@ class Manifest {
    */
   public function getItem($id) {
     foreach ($this->items as $key => $item) {
+      //echo "$key: $item<br>\n";
       if ($item->id == $id) return $item;
     }
   }
