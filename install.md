@@ -11,12 +11,14 @@
 * point your webserver to the BASEURL
 * enjoy
 
-To make upload and downloading via [fanficfare](https://github.com/JimmXinu/FanFicFare) work, add the following lines to your crontab and personal.ini:
+To make upload and downloading via [fanficfare](https://github.com/JimmXinu/FanFicFare) work, add the following lines to your crontab, copy your ```personal.ini``` to ```/<path>/<to>/<bookstack-dir>/lib/ebooklib.ini``` and edit/add the lines below
 
 _crontab:_
 
 ```* * * * * www-data /<path>/<to>/<bookstack-dir>/script/queue_download.php```
 
-_personal.ini:_
+_ebooklib.ini:_
 
 ```post_process_cmd: 	/<path>/<to>/<bookstack-dir>/script/addbook.php -f "${output_filename}"```
+```output_filename: /<path>/<to>/<bookstack-dir>/tmp/${title}-${siteabbrev}_${storyId}${formatext}```
+(you might have the output_filename config in sitespecific sections, They'll need to be changed too, of course)
