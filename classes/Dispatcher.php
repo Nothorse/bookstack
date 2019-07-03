@@ -295,6 +295,20 @@ class Dispatcher {
    * @param Library $library   library
    * @param array   $path path
    */
+  public function handlelog($library, $path) {
+    $log = $library->getLastLog(50, Library::DEBUG);
+    $this->display->printHeader();
+    echo "Last log entries:<br>";
+    $this->display->printLog($log);
+    echo "</div>";
+    $this->display->printFooter($this->time);
+    exit;
+  }
+
+  /**
+   * @param Library $library   library
+   * @param array   $path path
+   */
   public function handlesearch($library, $path) {
     if (isset($path[1])) {
       $search = \SQLite3::escapeString($path[1]);
