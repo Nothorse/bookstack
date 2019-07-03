@@ -76,7 +76,7 @@ class DublinCoreItem {
     if ($element->hasAttributes()) {
       foreach ($element->attributes as $attribute) {
         $opfPrefix = $element->lookupPrefix(self::OPF);
-        if ($opfPrefix) $dcItem->setOpfPrefix($optPrefix);
+        if ($opfPrefix) $dcItem->setOpfPrefix($opfPrefix);
         $dcItem->setOpf($attribute->nodeName, $attribute->nodeValue);
       }
     }
