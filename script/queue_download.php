@@ -16,7 +16,7 @@ if ($db->isBusy()) {
   exit;
 } else {
   $toBequeued = '"' . $entry . '"';
-  $basecmd = "nohup " . FFF . ' -c ' . __DIR__ . '/lib/ebooklib.ini ';
+  $basecmd = "nohup " . FFF . ' -c ' . dirname(__DIR__)  . '/lib/ebooklib.ini ';
   $baseupdateflags = "--update-epub --update-cover ";
   $basecmdend = ' >> ' . $LOGFILE . ' 2>&1 &';
   $cmdtype = (strpos($toBequeued, 'http') === 0) ? '' : $baseupdateflags;
