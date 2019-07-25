@@ -309,6 +309,15 @@ class Dispatcher {
    * @param Library $library   library
    * @param array   $path path
    */
+  public function handlefree($library, $path) {
+    $library->setFree();
+    exit;
+  }
+
+  /**
+   * @param Library $library   library
+   * @param array   $path path
+   */
   public function handlesearch($library, $path) {
     if (isset($path[1])) {
       $search = \SQLite3::escapeString($path[1]);
