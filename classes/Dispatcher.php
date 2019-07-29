@@ -298,7 +298,7 @@ class Dispatcher {
   public function handlelog($library, $path) {
     $log = $library->getLastLog(50, Library::DEBUG);
     $this->display->printHeader();
-    echo "Last log entries:<br>";
+    echo "<p>Last log entries:</p>";
     $this->display->printLog($log);
     echo "</div>";
     $this->display->printFooter($this->time);
