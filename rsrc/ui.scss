@@ -11,7 +11,7 @@ $background_color_1: #ddd;
 
 body.normal {
   font-family: $font_family_1;
-
+  -webkit-text-size-adjust: 100%;
   a {
     text-decoration: none;
     font-family: $font_family_1;
@@ -27,10 +27,10 @@ body.normal {
     background: #DADFE8;
     list-style-position: inside;
     font-family: $font_family_1;
-    font-size: 12px;
+    font-size: 15px;
     margin: 0;
     padding: 0;
-    line-height: 20px;
+    line-height: 13px;
     border-bottom: 1px #111 solid;
     overflow: auto;
     .reloadbtn {
@@ -42,13 +42,14 @@ body.normal {
     }
     ul {
       list-style: none;
-      line-height: 10px;
-      font-size: 11px;
-      padding: 0 0 0 8px;
+      line-height: 15px;
+      font-size: 15px;
+      padding: 0 0 0 0;
+      margin-top: 10px;
       li.category {
         text-transform: uppercase;
         font-weight: bold;
-        font-size: 11px;
+        font-size: 15px;
         color: $color_3;
         text-shadow: #F5F7F9 0 1px 0;
         float: left;
@@ -64,10 +65,13 @@ body.normal {
     }
   }
   input#myInput {
-    width: 130px;
-    margin-left: 10px;
-    margin-top: 10px;
-    float: left;
+    width: 140px;
+    margin-right: 10px;
+    margin-top: -10px;
+    float: right;
+    font-size: 18px;
+    line-height: 22px;
+    padding-left: 8px;
   }
   .titlelink {
     margin-left: 0;
@@ -180,24 +184,19 @@ body.normal {
         margin: 0;
         list-style-type: none;
         width: 100%;
-        line-height: 15px;
-        font-size: 14px;
+        line-height: 19px;
+        font-size: 17px;
         padding: 7px;
         white-space: nowrap;
         a {
           display: inline-block;
         }
         span.detailtoggle {
-          font-size: 10px;
+          font-size: 12px;
           display: inline-block;
-          visibility:hidden;
+          visibility:visible;
           padding:2px;
           width: 12px;
-        }
-        &:hover {
-          span.detailtoggle {
-            visibility: visible;
-          }
         }
       }
     }
@@ -257,22 +256,34 @@ body.normal {
     li.current {
     }
   }
-  .dl-link {
-    background: #DADFE8;
-    padding: 3px;
-    -moz-border-radius: 2px;
-    border-radius: 2px;
-    margin-left: 3px;
-    font-size: 12px;
+  .dl-links {
+    .dl-link {
+      background: #DADFE8;
+      padding: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+      margin: 5px;
+      display: inline-block;
+      font-size: 14px;
+    }
   }
   div.summary {
-    margin-left: 130px;
-    font-size: 0.7em;
+    margin-left: 20px;
+    font-size: 0.9em;
+    line-height: 1.2em;
     white-space: normal;
+    .summary {
+      font-size: 1em;
+    }
+    .tags {
+      display: inline-block;
+      margin-top: 2px;
+      color: #633;
+    }
   }
   .byline {
     display: block;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: normal;
     &:before {
       content: 'by ';

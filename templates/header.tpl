@@ -52,25 +52,27 @@
 </head>
 <body style='padding:0;margin:0;' class="normal">
 <div id="bluebar">
-    <div class="reloadbtn"><span onclick="reload()">🔁</span></div>
-    <input type="search" id="myInput" results=5
-           autosave='filtersearch' onkeyup="remoteFilter()" onblur="remoteFilter()" onmouseup="remoteFilter()"
-           placeholder="filter" />
     <ul>
       <li class="category">
-          <a href="%%self%%">🔝</a>
+          <a href="%%self%%">Recent</a>
       </li>
-        <li class="category">
-            <a href="%%self%%?sort=date">Date</a>
-        </li>
-        <li class="category">
-            <a href="%%self%%?sort=name">Title</a>
-        </li>
-        <li class="category">
-            <a href="%%self%%?sort=author">Authors</a>
-        </li>
-        <li class="category">
-            <a href="%%self%%/add/">Add/Log</a>
-        </li>
+      <li class="category">
+          <a href="%%self%%?sort=date">Date</a>
+      </li>
+      <li class="category">
+          <a href="%%self%%?sort=name">Title</a>
+      </li>
+      <li class="category">
+          <a href="%%self%%?sort=author">Authors</a>
+      </li>
+      <li class="category">
+          <a href="%%self%%/add/">Add</a>
+      </li>
+      <li class="category">
+          <a href="%%self%%/log/">Log</a>
+      </li>
     </ul>
+    <input type="search" id="myInput" results=5
+           autosave='filtersearch' onkeyup="remoteFilter()" onblur="remoteFilter()" onmouseup="remoteFilter()" onsubmit="remoteFilter()"
+           placeholder="filter" />
 </div>

@@ -1,5 +1,6 @@
 body.normal {
-  font-family: "Lucida Grande"; }
+  font-family: "Lucida Grande";
+  -webkit-text-size-adjust: 100%; }
   body.normal a {
     text-decoration: none;
     font-family: "Lucida Grande";
@@ -14,10 +15,10 @@ body.normal {
     background: #DADFE8;
     list-style-position: inside;
     font-family: "Lucida Grande";
-    font-size: 12px;
+    font-size: 15px;
     margin: 0;
     padding: 0;
-    line-height: 20px;
+    line-height: 13px;
     border-bottom: 1px #111 solid;
     overflow: auto; }
     body.normal #bluebar .reloadbtn {
@@ -28,13 +29,14 @@ body.normal {
       float: left; }
     body.normal #bluebar ul {
       list-style: none;
-      line-height: 10px;
-      font-size: 11px;
-      padding: 0 0 0 8px; }
+      line-height: 15px;
+      font-size: 15px;
+      padding: 0 0 0 0;
+      margin-top: 10px; }
       body.normal #bluebar ul li.category {
         text-transform: uppercase;
         font-weight: bold;
-        font-size: 11px;
+        font-size: 15px;
         color: #29802e;
         text-shadow: #F5F7F9 0 1px 0;
         float: left;
@@ -46,10 +48,13 @@ body.normal {
       line-height: 20px;
       height: 20px; }
   body.normal input#myInput {
-    width: 130px;
-    margin-left: 10px;
-    margin-top: 10px;
-    float: left; }
+    width: 140px;
+    margin-right: 10px;
+    margin-top: -10px;
+    float: right;
+    font-size: 18px;
+    line-height: 22px;
+    padding-left: 8px; }
   body.normal .titlelink {
     margin-left: 0;
     color: #666; }
@@ -144,20 +149,18 @@ body.normal {
         margin: 0;
         list-style-type: none;
         width: 100%;
-        line-height: 15px;
-        font-size: 14px;
+        line-height: 19px;
+        font-size: 17px;
         padding: 7px;
         white-space: nowrap; }
         body.normal #bookswide ul li a, body.normal #log ul li a {
           display: inline-block; }
         body.normal #bookswide ul li span.detailtoggle, body.normal #log ul li span.detailtoggle {
-          font-size: 10px;
+          font-size: 12px;
           display: inline-block;
-          visibility: hidden;
+          visibility: visible;
           padding: 2px;
           width: 12px; }
-        body.normal #bookswide ul li:hover span.detailtoggle, body.normal #log ul li:hover span.detailtoggle {
-          visibility: visible; }
     body.normal #bookswide .byline, body.normal #log .byline {
       display: inline;
       margin-left: 20px; }
@@ -198,20 +201,28 @@ body.normal {
         white-space: nowrap; }
         body.normal #books ul li a {
           display: inline-block; }
-  body.normal .dl-link {
+  body.normal .dl-links .dl-link {
     background: #DADFE8;
-    padding: 3px;
-    -moz-border-radius: 2px;
-    border-radius: 2px;
-    margin-left: 3px;
-    font-size: 12px; }
+    padding: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    margin: 5px;
+    display: inline-block;
+    font-size: 14px; }
   body.normal div.summary {
-    margin-left: 130px;
-    font-size: 0.7em;
+    margin-left: 20px;
+    font-size: 0.9em;
+    line-height: 1.2em;
     white-space: normal; }
+    body.normal div.summary .summary {
+      font-size: 1em; }
+    body.normal div.summary .tags {
+      display: inline-block;
+      margin-top: 2px;
+      color: #633; }
   body.normal .byline {
     display: block;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: normal; }
     body.normal .byline:before {
       content: 'by '; }
