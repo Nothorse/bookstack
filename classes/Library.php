@@ -433,7 +433,8 @@ class Library{
         if ($seriesname == $ebook->getSeriesName()) {
           $ebook->seriesId = $key;
           $updqry = "UPDATE books SET series_id = $key, " .
-                    "series_volume = " . $ebook->getSeriesVolume();
+                    "series_volume = " . $ebook->getSeriesVolume() .
+                    " WHERE md5id = '" . $ebook->id . "'" ;
           $success = $success && $this->db->exec($updqry);
           $done = true;
         }
