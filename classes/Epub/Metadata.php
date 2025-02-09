@@ -149,6 +149,19 @@ class Metadata {
   }
 
   /**
+   * getter for title tag
+   * @return string title
+   */
+  public function getSource() {
+    $title = [];
+    foreach ($this->dcItems as $key => $item) {
+      if ($item->isSource()) return $item->getContent();
+    }
+    return '';
+  }
+
+
+  /**
    * getter
    * @return string cover id in manifest
    */

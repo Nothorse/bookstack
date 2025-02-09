@@ -8,7 +8,7 @@
       }
     },
     "require": {
-        "ulrichsg/getopt-php": "^3.2",
+        "ulrichsg/getopt-php": "*",
         "treinetic/imageartist" : "*"
     },
     "license": "MIT",

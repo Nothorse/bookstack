@@ -38,7 +38,7 @@ class DublinCoreItem {
   public function __construct($tag, $content, $opfPrefix = 'opf') {
     $this->tag = $tag;
     $this->content = $content;
-    $this->$opfPrefix = $opfPrefix;
+    $this->opfPrefix = $opfPrefix;
   }
 
   /**
@@ -122,6 +122,14 @@ class DublinCoreItem {
    */
   public function isSummary() {
     return $this->tag == 'dc:description';
+  }
+
+  /**
+   * is summary (dc:description)
+   * @return bool [description]
+   */
+  public function isSource() {
+    return $this->tag == 'dc:source';
   }
 
   /**

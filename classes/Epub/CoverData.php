@@ -31,8 +31,8 @@ class CoverData {
    */
   public function __construct($ebook) {
     $this->ebook = $ebook;
-    $this->coverId = $ebook->metadata->getCover();
-    $this->coverPath = $ebook->manifest->getItem($this->coverId)->href;
+    $this->coverId = ($ebook->metadata) ? $ebook->metadata->getCover() : null;
+    $this->coverPath = ($ebook->manifest) ?  $ebook->manifest->getItem($this->coverId)->href : null;
   }
 
   /**

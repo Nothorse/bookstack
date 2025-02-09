@@ -39,6 +39,8 @@ class Dispatcher {
    */
   public function handleRequest($path, $time) {
     $this->time = $time;
+    // workaround for stupid nginx
+    if ($path[0] == 'index.php') array_shift($path);
     $handler = 'handle'.$path[0];
     $this->$handler($this->library, $path);
   }
@@ -109,7 +111,7 @@ class Dispatcher {
    */
   public function handleauthor($library, $path) {
     list($discard,$method, $author) = explode('/', $_SERVER['PATH_INFO']);
-    $list = $library->getBookList('added desc', 'where author = \'' . \SQLite3::escapeString($path[1]) . '\'');
+    $list = $library->getBookList('added desc', ['author' => [ '=', $path[1]]]);
     $this->display->printHeader();
     if ($author) $this->display->printBookList($list, 'bookswide');
     $this->display->printFooter($this->time);
@@ -123,7 +125,8 @@ class Dispatcher {
    */
   public function handleseries($library, $path) {
     list($discard,$method, $author) = explode('/', $_SERVER['PATH_INFO']);
-    $list = $library->getBookList('series_volume asc, added desc', 'where series_id = \'' . \SQLite3::escapeString($path[1]) . '\'');
+    $list = $library->getBookList('series_volume asc, added desc',
+                                  ['series_id' => ['=', $path[1]]]);
     $this->display->printHeader();
     //$alist = $this->listdir_by_author($path, $library);
     if ($author) $this->display->printBookList($list, 'bookswide');
@@ -239,15 +242,18 @@ class Dispatcher {
     $book->author = (isset($_POST['author'])) ? $_POST['author']:$book->author;
     $book->series = (isset($_POST['seriesname'])) ? [$_POST['seriesname'], $_POST['series_volume']] : [];
     $book->sortauthor = (isset($_POST['author'])) ? strtolower($_POST['author']) : $book->sortauthor;
+    $coverillu = false;
     if (isset($_FILES['illu'])) {
       $fileName = $_FILES['illu']['name'];
       $fileSize = $_FILES['illu']['size'];
       $fileTmpName  = $_FILES['illu']['tmp_name'];
       $fileType = $_FILES['illu']['type'];
-      move_uploaded_file($fileTmpName, dirname(__DIR__) . "/tmp/illu.jpg");
+      if (!isset($_FILES['illu']['error'])) {
+        $coverillu = true;
+        move_uploaded_file($fileTmpName, dirname(__DIR__) . "/tmp/illu.jpg");
+      }
     }
-    if (isset($_FILES['illu']) || (isset($_POST['updatecover']) &&
-                                   $_POST['updatecover'])) {
+    if ($coverillu || (isset($_POST['updatecover']) && $_POST['updatecover'])) {
       $book->updateCover($_POST['updatecover']);
     }
     if (isset($_POST['tags'])) {
@@ -320,11 +326,13 @@ class Dispatcher {
    */
   public function handlesearch($library, $path) {
     if (isset($path[1])) {
-      $search = \SQLite3::escapeString($path[1]);
-      $where = "WHERE title like '%$search%' ";
-      $where .= "or author like '%$search%' ";
-      $where .= "or summary like '%$search%' ";
-      $where .= "or tag like '%$search%' ";
+      $search = "%" . $path[1] . "%";
+      $where = [
+        'title' => ['LIKE', $search],
+        'author' => ['LIKE', $search],
+        'summary' => ['LIKE', $search],
+        'tag' => ['LIKE', $search],
+      ];
       $list = $library->getBooklist('added desc', $where);
       $this->display->printBookList($list, 'bookswide');
     } else {

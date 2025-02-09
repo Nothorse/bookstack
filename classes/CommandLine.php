@@ -117,7 +117,7 @@ abstract class CommandLine {
         }
       }
     }
-    $this->helpstring = (strlen($this->usage) > 0) ? $this->usage : "Usage: tbx [-q] ".$this->cmdname." [options]\n";
+    $this->helpstring = $this->usage ?? "Usage: tbx [-q] ".$this->cmdname." [options]\n";
     $helplen = 80 - ($parlen +2);
     foreach($this->params as $flag => $param) {
       if ($param['help'] === true) {
@@ -242,7 +242,7 @@ abstract class CommandLine {
    */
   private function getArgs() {
     $getopt = new GetOpt($this->structparams);
-    $getopt->parse();
+    $getopt->process();
     $args = $getopt->getOptions();
     return $args;
   }

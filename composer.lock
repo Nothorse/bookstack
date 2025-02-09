@@ -4,24 +4,23 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a634c0764ff75f2b615395db5d99fdd7",
+    "content-hash": "f93aed55c7d4799a2814bb72acd5a4b8",
     "packages": [
         {
             "name": "treinetic/imageartist",
-            "version": "1.0.1",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Treinetic/ImageArtist.git",
-                "reference": "483b966dca51eb809aeb048df460e26311c23db1"
+                "reference": "016eaf5e5b162ee1e7d3dc7db4c5e5d5a9b27513"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Treinetic/ImageArtist/zipball/483b966dca51eb809aeb048df460e26311c23db1",
-                "reference": "483b966dca51eb809aeb048df460e26311c23db1",
+                "url": "https://api.github.com/repos/Treinetic/ImageArtist/zipball/016eaf5e5b162ee1e7d3dc7db4c5e5d5a9b27513",
+                "reference": "016eaf5e5b162ee1e7d3dc7db4c5e5d5a9b27513",
                 "shasum": ""
             },
             "require": {
-                "ext-gd": "*",
                 "php": ">=5.5.0"
             },
             "require-dev": {
@@ -31,7 +30,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Treinetic\\ImageArtist\\": "src/"
+                    "Treinetic\\ImageArtist\\": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -55,29 +54,34 @@
                 "scale image",
                 "write text on image"
             ],
-            "time": "2018-11-21T08:30:30+00:00"
+            "support": {
+                "issues": "https://github.com/Treinetic/ImageArtist/issues",
+                "source": "https://github.com/Treinetic/ImageArtist/tree/1.0.0-rc"
+            },
+            "time": "2017-09-24T18:41:10+00:00"
         },
         {
             "name": "ulrichsg/getopt-php",
-            "version": "3.2.1",
+            "version": "v4.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getopt-php/getopt-php.git",
-                "reference": "6d22d6febd672954bf1b9676a4833489c5509116"
+                "reference": "91c31c9bc0ff9bbe22b0b02c63c7f5ddb8d2a8d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getopt-php/getopt-php/zipball/6d22d6febd672954bf1b9676a4833489c5509116",
-                "reference": "6d22d6febd672954bf1b9676a4833489c5509116",
+                "url": "https://api.github.com/repos/getopt-php/getopt-php/zipball/91c31c9bc0ff9bbe22b0b02c63c7f5ddb8d2a8d5",
+                "reference": "91c31c9bc0ff9bbe22b0b02c63c7f5ddb8d2a8d5",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
-                "php": ">=5.4.0"
+                "php": "^7.1 || ^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.8",
-                "squizlabs/php_codesniffer": "^2.7"
+                "phpunit/phpunit": "*",
+                "squizlabs/php_codesniffer": "^3.5.8",
+                "tflori/phpunit-printer": "*"
             },
             "type": "library",
             "autoload": {
@@ -99,9 +103,13 @@
                     "email": "thflori@gmail.com"
                 }
             ],
-            "description": "Command line arguments parser for PHP 5.4 - 7.1",
+            "description": "Command line arguments parser for PHP 7.1 and above",
             "homepage": "http://getopt-php.github.io/getopt-php",
-            "time": "2018-08-17T04:48:55+00:00"
+            "support": {
+                "issues": "https://github.com/getopt-php/getopt-php/issues",
+                "source": "https://github.com/getopt-php/getopt-php/tree/v4.0.3"
+            },
+            "time": "2022-12-13T20:37:45+00:00"
         }
     ],
     "packages-dev": [],
@@ -111,5 +119,6 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "2.6.0"
 }

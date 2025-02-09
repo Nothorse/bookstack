@@ -1,6 +1,7 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 namespace EBookLib;
+use EBookLib;
 define('SHELL', true);
 require_once(dirname(__DIR__) . "/config.php");
 require dirname(__DIR__) . "/vendor/autoload.php";
@@ -15,8 +16,7 @@ class AddBook extends CommandLine {
    * initParams -- Defining all parameters
    */
   protected function initParams() {
-    $this->setCommand('addbook');
-    $this->addParam(array('-f:','--file:'), 'FILE', 'Epub File');
+    $this->setCommand('refreshlibrary');
     $this->addParam(array('-d:','--directory:'), 'DIRECTORY', 'If a different basedirectory is desired');
   }
 
@@ -28,7 +28,23 @@ class AddBook extends CommandLine {
    */
   public function main() {
     global $argv;
-    $file = $this->getArgument('FILE');
+  $files = glob(BASEDIR . '*/*.epub');
+  $files += glob(BASEDIR . '*/*/*.epub');
+  $files += glob(BASEDIR . '*/*/*/*.epub');
+  $intactlog = dirname(__DIR__) . "/intact_books.log";
+  $failedlog = dirname(__DIR__) . "/damaged_books.log";
+  echo "$intactlog / $failedlog\n";
+    foreach($files as $file) {
+        $book = Ebook::createFromFile($file);
+        if (!$book instanceof Ebook) {
+            #echo "FAIL: $file: $book\n";
+            file_put_contents($failedlog, "$book\n", FILE_APPEND);
+            continue;
+        }
+        #echo "$file => Book: {$book->title} by {$book->author}\n\n";
+        file_put_contents($intactlog, "{$book->title} by {$book->author} (" . basename($file) . ")\n", FILE_APPEND);
+    }
+    exit;
     $lib = new Library();
     if($file && file_exists($file) && strpos($file, '.epub') > 0) {
       $book = new Ebook($file);
