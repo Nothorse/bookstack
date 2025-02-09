@@ -1,0 +1,8 @@
+.DS_Store
+config.php
+phpinfo.php
+.library.db
+damaged_books.log
+intact_books.log
+vendor
+tpc
